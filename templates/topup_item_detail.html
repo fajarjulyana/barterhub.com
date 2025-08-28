@@ -1,0 +1,242 @@
+
+{% extends "base.html" %}
+
+{% block title %}Detail Barang Topup{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow">
+                <div class="card-header {% if topup_item.status == 'approved' %}bg-success{% elif topup_item.status == 'rejected' %}bg-danger{% else %}bg-warning{% endif %} text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-box me-2"></i>{{ topup_item.item_title }}
+                    </h4>
+                    <small>
+                        Status: 
+                        {% if topup_item.status == 'approved' %}
+                            ✅ Disetujui Penjual
+                        {% elif topup_item.status == 'rejected' %}
+                            ❌ Ditolak Penjual
+                        {% else %}
+                            ⏳ Menunggu Persetujuan
+                        {% endif %}
+                    </small>
+                </div>
+                <div class="card-body">
+                    <!-- Basic Information -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h6 class="text-primary">Informasi Dasar</h6>
+                            <ul class="list-unstyled">
+                                <li><strong>Merek:</strong> {{ topup_item.brand or 'N/A' }}</li>
+                                <li><strong>Model:</strong> {{ topup_item.model or 'N/A' }}</li>
+                                <li><strong>Tahun Beli:</strong> {{ topup_item.year_purchased or 'N/A' }}</li>
+                                <li><strong>Kondisi:</strong> 
+                                    <span class="badge bg-secondary">{{ topup_item.item_condition }}</span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-primary">Informasi Harga</h6>
+                            <ul class="list-unstyled">
+                                <li><strong>Harga Asli:</strong> 
+                                    {% if topup_item.original_price %}
+                                        Rp {{ "{:,.0f}".format(topup_item.original_price) }}
+                                    {% else %}
+                                        N/A
+                                    {% endif %}
+                                </li>
+                                <li><strong>Estimasi Nilai:</strong> 
+                                    <span class="text-success fw-bold">
+                                        Rp {{ "{:,.0f}".format(topup_item.estimated_value) }}
+                                    </span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <!-- Description -->
+                    <div class="mb-4">
+                        <h6 class="text-primary">Deskripsi</h6>
+                        <p class="border rounded p-3 bg-light">{{ topup_item.item_description }}</p>
+                    </div>
+                    
+                    <!-- Condition Details -->
+                    {% if topup_item.physical_condition_notes or topup_item.functional_condition_notes or topup_item.defects_or_issues %}
+                    <div class="mb-4">
+                        <h6 class="text-primary">Detail Kondisi</h6>
+                        {% if topup_item.physical_condition_notes %}
+                        <div class="mb-2">
+                            <strong>Kondisi Fisik:</strong>
+                            <p class="text-muted">{{ topup_item.physical_condition_notes }}</p>
+                        </div>
+                        {% endif %}
+                        
+                        {% if topup_item.functional_condition_notes %}
+                        <div class="mb-2">
+                            <strong>Kondisi Fungsi:</strong>
+                            <p class="text-muted">{{ topup_item.functional_condition_notes }}</p>
+                        </div>
+                        {% endif %}
+                        
+                        {% if topup_item.defects_or_issues %}
+                        <div class="mb-2">
+                            <strong>Kerusakan/Masalah:</strong>
+                            <p class="text-warning">{{ topup_item.defects_or_issues }}</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Accessories -->
+                    {% if topup_item.additional_accessories %}
+                    <div class="mb-4">
+                        <h6 class="text-primary">Kelengkapan</h6>
+                        <p class="text-muted">{{ topup_item.additional_accessories }}</p>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Delivery Information -->
+                    <div class="mb-4">
+                        <h6 class="text-primary">Informasi Pengiriman</h6>
+                        <ul class="list-unstyled">
+                            <li><strong>Metode:</strong> {{ topup_item.delivery_method }}</li>
+                            <li><strong>Estimasi Kirim:</strong> 
+                                {% if topup_item.estimated_delivery_date %}
+                                    {{ topup_item.estimated_delivery_date.strftime('%d %B %Y') }}
+                                {% else %}
+                                    Belum ditentukan
+                                {% endif %}
+                            </li>
+                            {% if topup_item.tracking_number %}
+                            <li><strong>No. Resi:</strong> 
+                                <code>{{ topup_item.tracking_number }}</code>
+                            </li>
+                            {% endif %}
+                        </ul>
+                    </div>
+                    
+                    <!-- Seller Feedback -->
+                    {% if topup_item.seller_feedback %}
+                    <div class="alert {% if topup_item.seller_approval %}alert-success{% else %}alert-danger{% endif %}">
+                        <h6 class="alert-heading">
+                            {% if topup_item.seller_approval %}
+                                <i class="fas fa-check-circle me-2"></i>Feedback Penjual (Disetujui)
+                            {% else %}
+                                <i class="fas fa-times-circle me-2"></i>Feedback Penjual (Ditolak)
+                            {% endif %}
+                        </h6>
+                        <p class="mb-0">{{ topup_item.seller_feedback }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <!-- Images Gallery -->
+            <div class="card shadow mb-4">
+                <div class="card-header bg-light">
+                    <h6 class="mb-0"><i class="fas fa-images me-2"></i>Galeri Foto ({{ topup_item.images|length }})</h6>
+                </div>
+                <div class="card-body">
+                    {% if topup_item.images %}
+                        <div class="row">
+                            {% for image in topup_item.images %}
+                            <div class="col-6 mb-3">
+                                <div class="position-relative">
+                                    <img src="{{ image.get_image_url() }}" 
+                                         class="img-fluid rounded border" 
+                                         alt="{{ image.description }}"
+                                         style="height: 100px; object-fit: cover; width: 100%;"
+                                         data-bs-toggle="modal" 
+                                         data-bs-target="#imageModal{{ image.id }}">
+                                    <span class="badge bg-primary position-absolute top-0 start-0 m-1" style="font-size: 0.7em;">
+                                        {{ image.image_type }}
+                                    </span>
+                                    {% if image.is_primary %}
+                                    <span class="badge bg-warning position-absolute top-0 end-0 m-1" style="font-size: 0.7em;">
+                                        Utama
+                                    </span>
+                                    {% endif %}
+                                </div>
+                                <small class="text-muted d-block mt-1">{{ image.description }}</small>
+                            </div>
+                            
+                            <!-- Image Modal -->
+                            <div class="modal fade" id="imageModal{{ image.id }}" tabindex="-1">
+                                <div class="modal-dialog modal-lg">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">{{ image.description }}</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                        </div>
+                                        <div class="modal-body text-center">
+                                            <img src="{{ image.get_image_url() }}" class="img-fluid" alt="{{ image.description }}">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted text-center">Belum ada foto</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Actions for Seller -->
+            {% if is_seller and topup_item.status == 'pending' %}
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h6 class="mb-0"><i class="fas fa-gavel me-2"></i>Keputusan Penjual</h6>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('approve_topup_item', item_id=topup_item.id) }}">
+                        <div class="mb-3">
+                            <label for="feedback" class="form-label">Catatan/Feedback</label>
+                            <textarea class="form-control" id="feedback" name="feedback" rows="3" 
+                                      placeholder="Berikan catatan atau feedback untuk pembeli..."></textarea>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" name="action" value="approve" class="btn btn-success">
+                                <i class="fas fa-check me-2"></i>Setujui Barang Ini
+                            </button>
+                            <button type="submit" name="action" value="reject" class="btn btn-danger">
+                                <i class="fas fa-times me-2"></i>Tolak Barang Ini
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Transaction Info -->
+            <div class="card shadow mt-4">
+                <div class="card-header bg-light">
+                    <h6 class="mb-0"><i class="fas fa-receipt me-2"></i>Info Transaksi</h6>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled">
+                        <li><strong>Receipt:</strong> {{ topup_item.receipt.receipt_number }}</li>
+                        <li><strong>Pembeli:</strong> {{ topup_item.buyer.get_full_name() }}</li>
+                        <li><strong>Tanggal:</strong> {{ topup_item.created_at.strftime('%d %B %Y') }}</li>
+                        <li><strong>Status:</strong> 
+                            <span class="badge {% if topup_item.status == 'approved' %}bg-success{% elif topup_item.status == 'rejected' %}bg-danger{% else %}bg-warning{% endif %}">
+                                {{ topup_item.status.title() }}
+                            </span>
+                        </li>
+                    </ul>
+                    
+                    <a href="{{ url_for('transaction_receipt', receipt_id=topup_item.receipt.id) }}" 
+                       class="btn btn-outline-primary btn-sm">
+                        <i class="fas fa-eye me-1"></i>Lihat Receipt
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,293 @@
+
+{% extends "base.html" %}
+
+{% block title %}Detail Barang Topup{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-upload me-2"></i>Detail Barang untuk Topup
+                    </h4>
+                    <small>Berikan informasi selengkap mungkin untuk membangun kepercayaan penjual</small>
+                </div>
+                <div class="card-body">
+                    <form method="POST" enctype="multipart/form-data" id="topupItemForm">
+                        <input type="hidden" name="receipt_id" value="{{ receipt.id }}">
+                        
+                        <!-- Item Basic Information -->
+                        <div class="card mb-4">
+                            <div class="card-header bg-light">
+                                <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Informasi Dasar Barang</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="item_title" class="form-label">Nama Barang *</label>
+                                        <input type="text" class="form-control" id="item_title" name="item_title" 
+                                               placeholder="Contoh: Samsung Galaxy S23 Ultra 256GB" required>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="brand" class="form-label">Merek</label>
+                                        <input type="text" class="form-control" id="brand" name="brand" 
+                                               placeholder="Contoh: Samsung">
+                                    </div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="model" class="form-label">Model/Tipe</label>
+                                        <input type="text" class="form-control" id="model" name="model" 
+                                               placeholder="Contoh: SM-S918B">
+                                    </div>
+                                    <div class="col-md-3 mb-3">
+                                        <label for="year_purchased" class="form-label">Tahun Beli</label>
+                                        <input type="number" class="form-control" id="year_purchased" name="year_purchased" 
+                                               min="2000" max="2025" placeholder="2024">
+                                    </div>
+                                    <div class="col-md-3 mb-3">
+                                        <label for="item_condition" class="form-label">Kondisi *</label>
+                                        <select class="form-select" id="item_condition" name="item_condition" required>
+                                            <option value="">Pilih Kondisi</option>
+                                            <option value="New">Baru (belum pernah dipakai)</option>
+                                            <option value="Like New">Seperti Baru (sangat mulus)</option>
+                                            <option value="Good">Baik (normal wear)</option>
+                                            <option value="Fair">Lumayan (ada bekas pakai)</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="item_description" class="form-label">Deskripsi Lengkap *</label>
+                                    <textarea class="form-control" id="item_description" name="item_description" 
+                                              rows="4" required
+                                              placeholder="Jelaskan secara detail: spesifikasi, fungsi, kelengkapan, riwayat penggunaan, dll."></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Pricing Information -->
+                        <div class="card mb-4">
+                            <div class="card-header bg-light">
+                                <h5 class="mb-0"><i class="fas fa-tag me-2"></i>Informasi Harga</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="original_price" class="form-label">Harga Beli Asli</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text">Rp</span>
+                                            <input type="number" class="form-control" id="original_price" name="original_price" 
+                                                   placeholder="0">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="estimated_value" class="form-label">Perkiraan Nilai Sekarang *</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text">Rp</span>
+                                            <input type="number" class="form-control" id="estimated_value" name="estimated_value" 
+                                                   required placeholder="0">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Physical & Functional Condition -->
+                        <div class="card mb-4">
+                            <div class="card-header bg-light">
+                                <h5 class="mb-0"><i class="fas fa-stethoscope me-2"></i>Kondisi Detail</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label for="physical_condition_notes" class="form-label">Kondisi Fisik</label>
+                                    <textarea class="form-control" id="physical_condition_notes" name="physical_condition_notes" 
+                                              rows="3"
+                                              placeholder="Jelaskan kondisi fisik: goresan, penyok, bekas, dll."></textarea>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="functional_condition_notes" class="form-label">Kondisi Fungsi</label>
+                                    <textarea class="form-control" id="functional_condition_notes" name="functional_condition_notes" 
+                                              rows="3"
+                                              placeholder="Jelaskan kondisi fungsi: semua tombol berfungsi, layar normal, dll."></textarea>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="defects_or_issues" class="form-label">Kerusakan atau Masalah (jika ada)</label>
+                                    <textarea class="form-control" id="defects_or_issues" name="defects_or_issues" 
+                                              rows="3"
+                                              placeholder="Sebutkan jika ada kerusakan, masalah, atau cacat apapun. Jujur akan menambah kepercayaan."></textarea>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="additional_accessories" class="form-label">Kelengkapan & Aksesoris</label>
+                                    <textarea class="form-control" id="additional_accessories" name="additional_accessories" 
+                                              rows="3"
+                                              placeholder="Sebutkan kelengkapan: dus, charger, kabel, earphone, manual, dll."></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Proof of Ownership -->
+                        <div class="card mb-4">
+                            <div class="card-header bg-warning text-dark">
+                                <h5 class="mb-0"><i class="fas fa-certificate me-2"></i>Bukti Kepemilikan & Keaslian</h5>
+                                <small>Sangat penting untuk membangun kepercayaan</small>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="purchase_proof" class="form-label">Bukti Pembelian</label>
+                                        <input type="file" class="form-control" id="purchase_proof" name="purchase_proof" 
+                                               accept="image/*,.pdf">
+                                        <div class="form-text">Upload foto nota, invoice, atau receipt pembelian</div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="authenticity_proof" class="form-label">Bukti Keaslian</label>
+                                        <input type="file" class="form-control" id="authenticity_proof" name="authenticity_proof" 
+                                               accept="image/*,.pdf">
+                                        <div class="form-text">Upload foto kartu garansi, serial number, stiker hologram, dll.</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Photos Section -->
+                        <div class="card mb-4">
+                            <div class="card-header bg-success text-white">
+                                <h5 class="mb-0"><i class="fas fa-camera me-2"></i>Foto-foto Barang</h5>
+                                <small>Minimal 5 foto dari berbagai sudut. Semakin banyak semakin baik!</small>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label for="main_images" class="form-label">Foto Utama (tampak depan, belakang, samping) *</label>
+                                    <input type="file" class="form-control" id="main_images" name="main_images" 
+                                           multiple accept="image/*" required>
+                                    <div class="form-text">Upload minimal 3 foto dari sudut berbeda</div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="detail_images" class="form-label">Foto Detail</label>
+                                    <input type="file" class="form-control" id="detail_images" name="detail_images" 
+                                           multiple accept="image/*">
+                                    <div class="form-text">Upload foto close-up: tombol, port, layar, dll.</div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="condition_images" class="form-label">Foto Kondisi</label>
+                                    <input type="file" class="form-control" id="condition_images" name="condition_images" 
+                                           multiple accept="image/*">
+                                    <div class="form-text">Upload foto goresan, bekas pakai, atau kondisi khusus lainnya</div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="accessory_images" class="form-label">Foto Kelengkapan</label>
+                                    <input type="file" class="form-control" id="accessory_images" name="accessory_images" 
+                                           multiple accept="image/*">
+                                    <div class="form-text">Upload foto dus, charger, dan aksesoris lainnya</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Delivery Commitment -->
+                        <div class="card mb-4">
+                            <div class="card-header bg-info text-white">
+                                <h5 class="mb-0"><i class="fas fa-truck me-2"></i>Komitmen Pengiriman</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="delivery_method" class="form-label">Metode Pengiriman *</label>
+                                        <select class="form-select" id="delivery_method" name="delivery_method" required>
+                                            <option value="">Pilih Metode</option>
+                                            <option value="shipping">Kirim via Expedisi (JNE, J&T, dll)</option>
+                                            <option value="pickup">Ambil Langsung / COD</option>
+                                            <option value="courier">Kurir Same Day</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="estimated_delivery_date" class="form-label">Estimasi Pengiriman *</label>
+                                        <input type="date" class="form-control" id="estimated_delivery_date" name="estimated_delivery_date" 
+                                               required min="{{ today }}">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Terms Agreement -->
+                        <div class="card mb-4 border-danger">
+                            <div class="card-header bg-danger text-white">
+                                <h5 class="mb-0"><i class="fas fa-exclamation-triangle me-2"></i>Persetujuan & Jaminan</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="ownership_guarantee" name="ownership_guarantee" required>
+                                    <label class="form-check-label" for="ownership_guarantee">
+                                        <strong>Saya menjamin bahwa barang ini adalah milik sah saya sendiri</strong>
+                                    </label>
+                                </div>
+                                
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="condition_truth" name="condition_truth" required>
+                                    <label class="form-check-label" for="condition_truth">
+                                        <strong>Semua informasi kondisi barang yang saya berikan adalah benar dan jujur</strong>
+                                    </label>
+                                </div>
+                                
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="delivery_commitment" name="delivery_commitment" required>
+                                    <label class="form-check-label" for="delivery_commitment">
+                                        <strong>Saya berkomitmen mengirim barang sesuai jadwal yang telah ditetapkan</strong>
+                                    </label>
+                                </div>
+                                
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="penalty_agreement" name="penalty_agreement" required>
+                                    <label class="form-check-label" for="penalty_agreement">
+                                        <strong>Saya setuju dengan sanksi jika melanggar komitmen (blacklist, penalty, dll)</strong>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-primary btn-lg px-5">
+                                <i class="fas fa-paper-plane me-2"></i>Kirim Detail Barang untuk Persetujuan
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Set minimum date to today
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('estimated_delivery_date').min = today;
+    
+    // Calculate estimated delivery date based on method
+    document.getElementById('delivery_method').addEventListener('change', function() {
+        const method = this.value;
+        const dateInput = document.getElementById('estimated_delivery_date');
+        const today = new Date();
+        
+        let daysToAdd = 7; // default
+        switch(method) {
+            case 'shipping': daysToAdd = 5; break;
+            case 'pickup': daysToAdd = 1; break;
+            case 'courier': daysToAdd = 1; break;
+        }
+        
+        const estimatedDate = new Date(today.getTime() + (daysToAdd * 24 * 60 * 60 * 1000));
+        dateInput.value = estimatedDate.toISOString().split('T')[0];
+    });
+});
+</script>
+{% endblock %}

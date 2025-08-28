@@ -1,0 +1,214 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Users - Admin - BarterHub{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="display-6 fw-bold">Manage Users</h1>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="{{ url_for('admin_dashboard') }}">Admin</a></li>
+                        <li class="breadcrumb-item active">Users</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Users List -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="fas fa-users me-2"></i>All Users</h5>
+                        <span class="badge bg-primary">{{ users.total }} users</span>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    {% if users.items %}
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>User</th>
+                                        <th>Contact</th>
+                                        <th>Joined</th>
+                                        <th>Products</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for user in users.items %}
+                                    <tr>
+                                        <td>
+                                            <div>
+                                                <strong>{{ user.get_full_name() }}</strong>
+                                                {% if user.is_admin %}
+                                                    <span class="badge bg-warning ms-2">Admin</span>
+                                                {% endif %}
+                                                <br>
+                                                <small class="text-muted">@{{ user.username }}</small>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div>
+                                                <i class="fas fa-envelope me-1"></i>{{ user.email }}<br>
+                                                {% if user.phone %}
+                                                <i class="fas fa-phone me-1"></i>{{ user.phone }}
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                        <td>{{ user.created_at.strftime('%b %d, %Y') }}</td>
+                                        <td>
+                                            <span class="badge bg-info">{{ user.products|length }}</span>
+                                        </td>
+                                        <td>
+                                            {% if user.is_suspended %}
+                                                <span class="badge bg-danger">Suspended</span><br>
+                                                <small class="text-muted">{{ user.suspension_reason }}</small>
+                                            {% elif user.active %}
+                                                <span class="badge bg-success">Active</span>
+                                            {% else %}
+                                                <span class="badge bg-warning">Inactive</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if user.id != current_user.id %}
+                                                <div class="d-flex gap-1">
+                                                    <a href="{{ url_for('toggle_user_status', user_id=user.id) }}" 
+                                                       class="btn btn-sm {% if user.active %}btn-outline-warning{% else %}btn-outline-success{% endif %}"
+                                                       onclick="return confirm('Are you sure you want to {{ 'deactivate' if user.active else 'activate' }} this user?')">
+                                                        {% if user.active %}
+                                                            <i class="fas fa-pause"></i>
+                                                        {% else %}
+                                                            <i class="fas fa-play"></i>
+                                                        {% endif %}
+                                                    </a>
+                                                    
+                                                    {% if not user.is_suspended %}
+                                                        <button class="btn btn-sm btn-outline-danger"
+                                                                data-bs-toggle="modal" 
+                                                                data-bs-target="#suspendModal{{ user.id }}">
+                                                            <i class="fas fa-ban"></i>
+                                                        </button>
+                                                    {% else %}
+                                                        <a href="{{ url_for('unsuspend_user', user_id=user.id) }}" 
+                                                           class="btn btn-sm btn-success"
+                                                           onclick="return confirm('Pulihkan user ini?')">
+                                                            <i class="fas fa-check"></i>
+                                                        </a>
+                                                    {% endif %}
+                                                </div>
+                                            {% else %}
+                                                <span class="text-muted">Current User</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                            <h5>No users found</h5>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Pagination -->
+    {% if users.pages > 1 %}
+    <div class="row mt-4">
+        <div class="col-12">
+            <nav aria-label="Users pagination">
+                <ul class="pagination justify-content-center">
+                    {% if users.has_prev %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('admin_users', page=users.prev_num) }}">
+                            Previous
+                        </a>
+                    </li>
+                    {% endif %}
+                    
+                    {% for page_num in users.iter_pages() %}
+                        {% if page_num %}
+                            {% if page_num != users.page %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ url_for('admin_users', page=page_num) }}">
+                                    {{ page_num }}
+                                </a>
+                            </li>
+                            {% else %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ page_num }}</span>
+                            </li>
+                            {% endif %}
+                        {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">...</span>
+                        </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if users.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('admin_users', page=users.next_num) }}">
+                            Next
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Suspend Modals -->
+    {% for user in users.items %}
+    {% if user.id != current_user.id and not user.is_suspended %}
+    <div class="modal fade" id="suspendModal{{ user.id }}" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Suspend User: {{ user.username }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form method="POST" action="{{ url_for('suspend_user', user_id=user.id) }}">
+                    <div class="modal-body">
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <strong>Peringatan:</strong> Tindakan ini akan menutup toko user dan menonaktifkan semua produk mereka.
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Alasan Suspend</label>
+                            <select class="form-select" name="reason" required>
+                                <option value="">Pilih alasan</option>
+                                <option value="Pelanggaran kebijakan platform">Pelanggaran kebijakan platform</option>
+                                <option value="Penipuan atau aktivitas mencurigakan">Penipuan atau aktivitas mencurigakan</option>
+                                <option value="Spam atau konten tidak pantas">Spam atau konten tidak pantas</option>
+                                <option value="Laporan dari pengguna lain">Laporan dari pengguna lain</option>
+                                <option value="Pelanggaran hukum">Pelanggaran hukum</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-danger">Suspend User</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    {% endfor %}
+</div>
+{% endblock %}

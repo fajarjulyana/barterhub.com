@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block title %}Account Suspended - BarterHub{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-lg">
+                <div class="card-header bg-danger text-white">
+                    <div class="text-center">
+                        <i class="fas fa-exclamation-triangle fa-3x mb-3"></i>
+                        <h3 class="mb-0">Akun Anda Disuspend</h3>
+                    </div>
+                </div>
+                <div class="card-body p-5 text-center">
+                    <div class="mb-4">
+                        <h5 class="text-danger">Akses Terbatas</h5>
+                        <p class="text-muted mb-4">
+                            Akun Anda telah disuspend oleh admin. Selama periode ini, Anda tidak dapat mengakses fitur-fitur platform.
+                        </p>
+                    </div>
+                    
+                    {% if current_user.suspension_reason %}
+                    <div class="alert alert-danger">
+                        <h6><strong>Alasan Suspend:</strong></h6>
+                        <p class="mb-0">{{ current_user.suspension_reason }}</p>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="mb-4">
+                        <h6 class="mb-3">Selama akun disuspend, Anda tidak dapat:</h6>
+                        <ul class="list-unstyled text-start">
+                            <li class="mb-2"><i class="fas fa-times text-danger me-2"></i>Menambah atau mengedit produk</li>
+                            <li class="mb-2"><i class="fas fa-times text-danger me-2"></i>Membuat proposal barter</li>
+                            <li class="mb-2"><i class="fas fa-times text-danger me-2"></i>Mengirim pesan ke pengguna lain</li>
+                            <li class="mb-2"><i class="fas fa-times text-danger me-2"></i>Mengakses dashboard dan fitur lainnya</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <h6><strong>Ingin Mengajukan Banding?</strong></h6>
+                        <p class="mb-0">
+                            Jika Anda merasa suspend ini tidak tepat, silakan hubungi admin melalui email 
+                            <strong>admin@barterhub.com</strong> untuk mengajukan banding.
+                        </p>
+                    </div>
+                    
+                    <div class="row mt-4">
+                        <div class="col-md-6 mb-2">
+                            <a href="{{ url_for('logout') }}" class="btn btn-outline-danger w-100">
+                                <i class="fas fa-sign-out-alt me-2"></i>Logout
+                            </a>
+                        </div>
+                        <div class="col-md-6">
+                            <button class="btn btn-primary w-100" onclick="location.reload()">
+                                <i class="fas fa-sync-alt me-2"></i>Refresh Status
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card-footer text-center bg-light">
+                    <small class="text-muted">
+                        <i class="fas fa-info-circle me-1"></i>
+                        Status akun akan otomatis dipulihkan jika admin mencabut suspend
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.card {
+    border: none;
+    border-radius: 15px;
+}
+.card-header {
+    border-radius: 15px 15px 0 0 !important;
+}
+</style>
+{% endblock %}
