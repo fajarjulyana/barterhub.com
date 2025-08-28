@@ -1,0 +1,196 @@
+
+{% extends "base.html" %}
+
+{% block title %}Keranjang Barter - BarterHub{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="display-6 fw-bold text-primary"><i class="fas fa-shopping-cart me-2"></i>Keranjang Barter</h1>
+            <p class="text-muted">Kelola produk yang ingin Anda barter</p>
+        </div>
+    </div>
+
+    {% if cart_items %}
+    <div class="row">
+        <div class="col-lg-12">
+            {% for seller_id, seller_data in sellers_cart.items() %}
+            <div class="card mb-4">
+                <div class="card-header bg-light">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="mb-1"><i class="fas fa-store me-2"></i>{{ seller_data.seller_name }}</h5>
+                            <small class="text-muted">{{ seller_data.items|length }} item - Total: {{ seller_data.total_value }} pts</small>
+                        </div>
+                        <div>
+                            <a href="{{ url_for('checkout_seller', seller_id=seller_id) }}" class="btn btn-success btn-sm">
+                                <i class="fas fa-shopping-cart me-1"></i>Checkout Toko Ini
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% for cart_item in seller_data.items %}
+                    <div class="cart-item border-bottom pb-3 mb-3" id="cart-item-{{ cart_item.id }}">
+                        <div class="row align-items-center">
+                            <div class="col-md-2">
+                                {% if cart_item.product.image_url %}
+                                <img src="{{ cart_item.product.image_url }}" class="img-fluid rounded" alt="{{ cart_item.product.title }}">
+                                {% elif cart_item.product.image_filename %}
+                                <img src="{{ url_for('static', filename='uploads/' + cart_item.product.image_filename) }}" class="img-fluid rounded" alt="{{ cart_item.product.title }}">
+                                {% else %}
+                                <div class="bg-light rounded d-flex align-items-center justify-content-center" style="height: 80px;">
+                                    <i class="fas fa-image text-muted"></i>
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-7">
+                                <h6 class="mb-1">{{ cart_item.product.title }}</h6>
+                                <p class="text-muted small mb-1">{{ cart_item.product.description[:100] }}...</p>
+                                <div class="d-flex gap-2 mb-2">
+                                    <span class="badge bg-primary">{{ cart_item.product.get_final_barter_value() }} pts</span>
+                                    <span class="badge bg-secondary">{{ cart_item.product.condition }}</span>
+                                </div>
+                                
+                                <!-- Seller's Exchange Preferences -->
+                                <div class="seller-preferences p-2 bg-light rounded">
+                                    <h6 class="text-success mb-1"><i class="fas fa-exchange-alt me-1"></i>Penjual Ingin Ditukar Dengan:</h6>
+                                    <ul class="mb-0 small">
+                                        <li><strong>Kategori:</strong> {{ cart_item.product.category.name }}</li>
+                                        <li><strong>Nilai Minimal:</strong> {{ cart_item.product.get_final_barter_value() }} pts</li>
+                                        <li><strong>Kondisi:</strong> Minimal {{ cart_item.product.condition }}</li>
+                                        {% if cart_item.product.estimated_value %}
+                                        <li><strong>Atau Uang Tunai:</strong> Rp {{ "{:,.0f}".format(cart_item.product.estimated_value) }}</li>
+                                        {% endif %}
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="col-md-2 text-center">
+                                <button class="btn btn-warning btn-sm mb-1" onclick="chatWithSeller({{ cart_item.product.owner.id }}, '{{ cart_item.product.owner.get_full_name() }}', {{ cart_item.product.id }})">
+                                    <i class="fas fa-comments"></i> Chat
+                                </button>
+                                <button class="btn btn-danger btn-sm" onclick="removeFromCart({{ cart_item.id }})">
+                                    <i class="fas fa-trash"></i> Hapus
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        </div>
+
+    <!-- Cart Summary -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card border-success">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-chart-pie me-2"></i>Ringkasan Keranjang</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 text-center">
+                            <h3 class="text-primary">{{ sellers_cart|length }}</h3>
+                            <p class="mb-0">Toko/Penjual</p>
+                        </div>
+                        <div class="col-md-3 text-center">
+                            <h3 class="text-success">{{ cart_items|length }}</h3>
+                            <p class="mb-0">Total Item</p>
+                        </div>
+                        <div class="col-md-3 text-center">
+                            <h3 class="text-warning">{{ cart_items|sum(attribute='product.get_final_barter_value') }}</h3>
+                            <p class="mb-0">Total Poin</p>
+                        </div>
+                        <div class="col-md-3 text-center">
+                            <a href="{{ url_for('browse_products') }}" class="btn btn-outline-primary">
+                                <i class="fas fa-plus me-2"></i>Tambah Lagi
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Cara Checkout:</strong> Klik tombol "Checkout Toko Ini" untuk melakukan negosiasi dengan masing-masing penjual secara terpisah.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="row">
+        <div class="col-12">
+            <div class="text-center py-5">
+                <i class="fas fa-shopping-cart fa-5x text-muted mb-4"></i>
+                <h3>Keranjang Kosong</h3>
+                <p class="text-muted mb-4">Belum ada produk dalam keranjang barter Anda</p>
+                <a href="{{ url_for('browse_products') }}" class="btn btn-primary btn-lg">
+                    <i class="fas fa-search me-2"></i>Mulai Berbelanja
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+function removeFromCart(cartId) {
+    if (confirm('Hapus produk dari keranjang?')) {
+        fetch(`/remove_from_cart/${cartId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                document.getElementById(`cart-item-${cartId}`).remove();
+                updateCartCount(data.cart_count);
+                
+                // Reload if cart is empty
+                if (data.cart_count === 0) {
+                    location.reload();
+                }
+            } else {
+                alert(data.error || 'Gagal menghapus dari keranjang');
+            }
+        });
+    }
+}
+
+function chatWithSeller(sellerId, sellerName, productId) {
+    window.open(`/chat_with_seller/${sellerId}?product_id=${productId}`, '_blank', 'width=600,height=500');
+}
+
+function proceedToCheckout() {
+    alert('Fitur checkout akan segera tersedia!');
+}
+
+function continueShoppingMode() {
+    window.location.href = "{{ url_for('browse_products') }}";
+}
+
+function clearCart() {
+    if (confirm('Hapus semua produk dari keranjang?')) {
+        // Implementation for clearing entire cart
+        alert('Fitur kosongkan keranjang akan segera tersedia!');
+    }
+}
+
+function updateCartCount(count) {
+    const cartBadges = document.querySelectorAll('.cart-count');
+    cartBadges.forEach(badge => {
+        badge.textContent = count;
+        if (count === 0) {
+            badge.style.display = 'none';
+        }
+    });
+}
+</script>
+{% endblock %}

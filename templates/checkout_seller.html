@@ -1,0 +1,225 @@
+
+{% extends "base.html" %}
+
+{% block title %}Checkout - {{ seller.get_full_name() }} - BarterHub{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('view_cart') }}">Keranjang</a></li>
+                    <li class="breadcrumb-item active">Checkout - {{ seller.get_full_name() }}</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Seller Info -->
+            <div class="card mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-store me-2"></i>Checkout dari: {{ seller.get_full_name() }}</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Email:</strong> {{ seller.email }}</p>
+                            <p><strong>Phone:</strong> {{ seller.phone or 'Tidak tersedia' }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Total Item:</strong> {{ cart_items|length }} produk</p>
+                            <p><strong>Total Nilai:</strong> {{ total_value }} poin</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Items to Checkout -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h6 class="mb-0">Item yang akan di-Checkout</h6>
+                </div>
+                <div class="card-body">
+                    {% for cart_item in cart_items %}
+                    <div class="border-bottom pb-3 mb-3">
+                        <div class="row align-items-center">
+                            <div class="col-md-3">
+                                {% if cart_item.product.image_url %}
+                                <img src="{{ cart_item.product.image_url }}" class="img-fluid rounded" alt="{{ cart_item.product.title }}">
+                                {% elif cart_item.product.image_filename %}
+                                <img src="{{ url_for('static', filename='uploads/' + cart_item.product.image_filename) }}" class="img-fluid rounded" alt="{{ cart_item.product.title }}">
+                                {% else %}
+                                <div class="bg-light rounded d-flex align-items-center justify-content-center" style="height: 100px;">
+                                    <i class="fas fa-image text-muted"></i>
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-9">
+                                <h6 class="mb-1">{{ cart_item.product.title }}</h6>
+                                <p class="text-muted small mb-2">{{ cart_item.product.description[:150] }}...</p>
+                                <div class="d-flex gap-2 mb-2">
+                                    <span class="badge bg-primary">{{ cart_item.product.get_final_barter_value() }} pts</span>
+                                    <span class="badge bg-secondary">{{ cart_item.product.condition }}</span>
+                                    <span class="badge bg-info">{{ cart_item.product.category.name }}</span>
+                                </div>
+                                
+                                <!-- Exchange Preferences -->
+                                <div class="seller-wants p-2 bg-light rounded">
+                                    <h6 class="text-success mb-1"><i class="fas fa-bullseye me-1"></i>Penjual Ingin:</h6>
+                                    <ul class="mb-0 small">
+                                        <li>Kategori: <strong>{{ cart_item.product.category.name }}</strong></li>
+                                        <li>Nilai minimal: <strong>{{ cart_item.product.get_final_barter_value() }} poin</strong></li>
+                                        <li>Kondisi minimal: <strong>{{ cart_item.product.condition }}</strong></li>
+                                        {% if cart_item.product.estimated_value %}
+                                        <li>Alternatif uang: <strong>Rp {{ "{:,.0f}".format(cart_item.product.estimated_value) }}</strong></li>
+                                        {% endif %}
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <!-- Checkout Form -->
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="fas fa-handshake me-2"></i>Proposal Barter</h6>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('process_checkout_seller', seller_id=seller.id) }}">
+                        <!-- Informasi Topup System -->
+                        <div class="alert alert-info mb-3">
+                            <h6 class="alert-heading"><i class="fas fa-lightbulb me-2"></i>Sistem Topup Barang</h6>
+                            <p class="mb-0">Anda tidak perlu memiliki barang terlebih dahulu. Sistem akan menghitung nilai total dan Anda dapat "topup" dengan barang atau uang sesuai permintaan penjual.</p>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Metode Pembayaran <span class="text-danger">*</span></label>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="payment_method" id="topup_item" value="topup_item" checked>
+                                        <label class="form-check-label" for="topup_item">
+                                            <strong>Topup dengan Barang</strong><br>
+                                            <small class="text-muted">Beli/cari barang sesuai keinginan penjual</small>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="payment_method" id="cash_only" value="cash_only">
+                                        <label class="form-check-label" for="cash_only">
+                                            <strong>Bayar Tunai</strong><br>
+                                            <small class="text-muted">Jika penjual menerima uang tunai</small>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="topup_details" class="mb-3">
+                            <label class="form-label">Komitmen Topup Barang</label>
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h6 class="text-success mb-2">Yang Harus Anda Siapkan:</h6>
+                                    {% for cart_item in cart_items %}
+                                    <div class="border-bottom pb-2 mb-2">
+                                        <strong>{{ cart_item.product.title }}</strong>
+                                        <ul class="mb-0 small">
+                                            <li>Kategori: {{ cart_item.product.category.name }}</li>
+                                            <li>Nilai: {{ cart_item.product.get_final_barter_value() }} poin</li>
+                                            <li>Kondisi minimal: {{ cart_item.product.condition }}</li>
+                                            {% if cart_item.product.exchange_preference %}
+                                            <li><strong>Penjual ingin:</strong> {{ cart_item.product.exchange_preference }}</li>
+                                            {% endif %}
+                                        </ul>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            <div class="form-check mt-2">
+                                <input class="form-check-input" type="checkbox" name="topup_commitment" id="topup_commitment" required>
+                                <label class="form-check-label" for="topup_commitment">
+                                    <small>Saya berkomitmen untuk menyediakan barang sesuai permintaan penjual dalam waktu 7 hari</small>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div id="cash_details" class="mb-3" style="display: none;">
+                            <label class="form-label">Jumlah Pembayaran Tunai</label>
+                            <div class="input-group">
+                                <span class="input-group-text">Rp</span>
+                                <input type="number" name="cash_amount" class="form-control" min="0" placeholder="0">
+                            </div>
+                            <small class="text-muted">Total nilai estimasi: Rp {{ cart_items|sum(attribute='product.estimated_value')|round|int or 'Tidak tersedia' }}</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Pesan untuk Penjual</label>
+                            <textarea name="message" class="form-control" rows="4" placeholder="Sampaikan rencana topup barang atau negosiasi lainnya..."></textarea>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="fas fa-handshake me-2"></i>Buat Deal & Checkout
+                            </button>
+                            <a href="{{ url_for('view_cart') }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Kembali ke Keranjang
+                            </a>
+                        </div>
+                    </form>
+
+                    <script>
+                    document.querySelectorAll('input[name="payment_method"]').forEach(radio => {
+                        radio.addEventListener('change', function() {
+                            const topupDetails = document.getElementById('topup_details');
+                            const cashDetails = document.getElementById('cash_details');
+                            const topupCommitment = document.getElementById('topup_commitment');
+                            
+                            if (this.value === 'topup_item') {
+                                topupDetails.style.display = 'block';
+                                cashDetails.style.display = 'none';
+                                topupCommitment.required = true;
+                            } else {
+                                topupDetails.style.display = 'none';
+                                cashDetails.style.display = 'block';
+                                topupCommitment.required = false;
+                            }
+                        });
+                    });
+                    </script>
+                </div>
+            </div>
+
+            <!-- Summary -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h6 class="mb-0">Ringkasan</h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Total Item:</span>
+                        <span>{{ cart_items|length }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Total Poin:</span>
+                        <span>{{ total_value }} pts</span>
+                    </div>
+                    <hr>
+                    <div class="alert alert-info small mb-0">
+                        <i class="fas fa-info-circle me-1"></i>
+                        Proposal akan dikirim untuk setiap item secara terpisah ke penjual.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
