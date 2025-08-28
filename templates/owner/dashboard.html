@@ -1,0 +1,333 @@
+
+{% extends "base.html" %}
+
+{% block title %}Dashboard Owner - BarterHub{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="display-6 fw-bold text-danger">Dashboard Owner</h1>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-danger" onclick="showSystemAlert()">
+                        <i class="fas fa-exclamation-triangle me-2"></i>Kirim Peringatan Sistem
+                    </button>
+                    <button class="btn btn-warning" onclick="showMaintenanceMode()">
+                        <i class="fas fa-tools me-2"></i>Mode Maintenance
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Stats Cards -->
+    <div class="row g-4 mb-5">
+        <div class="col-lg-3 col-md-6">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="card-title">Total Pengguna</h6>
+                            <h3 class="mb-0">{{ total_users }}</h3>
+                        </div>
+                        <i class="fas fa-users fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="card-title">Total Produk</h6>
+                            <h3 class="mb-0">{{ total_products }}</h3>
+                        </div>
+                        <i class="fas fa-box fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="card-title">Produk Aktif</h6>
+                            <h3 class="mb-0">{{ active_products }}</h3>
+                        </div>
+                        <i class="fas fa-check-circle fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="card-title">Total Transaksi</h6>
+                            <h3 class="mb-0">{{ total_proposals }}</h3>
+                        </div>
+                        <i class="fas fa-handshake fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Owner Control Panel -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0"><i class="fas fa-crown me-2"></i>Panel Kontrol Owner</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-users fa-3x text-primary mb-3"></i>
+                                    <h6>Kelola Pengguna</h6>
+                                    <p class="small text-muted">Kelola akun pengguna, suspend/aktifkan</p>
+                                    <a href="{{ url_for('admin_users') }}" class="btn btn-primary btn-sm">
+                                        Kelola Pengguna
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-store fa-3x text-success mb-3"></i>
+                                    <h6>Kelola Toko</h6>
+                                    <p class="small text-muted">Tutup/buka toko, kelola produk</p>
+                                    <button class="btn btn-success btn-sm" onclick="showStoreManagement()">
+                                        Kelola Toko
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-chart-line fa-3x text-info mb-3"></i>
+                                    <h6>Laporan Sistem</h6>
+                                    <p class="small text-muted">Lihat statistik dan laporan lengkap</p>
+                                    <button class="btn btn-info btn-sm" onclick="showSystemReports()">
+                                        Lihat Laporan
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-comments fa-3x text-warning mb-3"></i>
+                                    <h6>Pesan Pengguna</h6>
+                                    <p class="small text-muted">Lihat pesan dan keluhan pengguna</p>
+                                    <a href="{{ url_for('admin_messages') }}" class="btn btn-warning btn-sm">
+                                        Lihat Pesan
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-exchange-alt fa-3x text-secondary mb-3"></i>
+                                    <h6>Transaksi</h6>
+                                    <p class="small text-muted">Monitor semua transaksi barter</p>
+                                    <a href="{{ url_for('admin_transactions') }}" class="btn btn-secondary btn-sm">
+                                        Lihat Transaksi
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-cog fa-3x text-dark mb-3"></i>
+                                    <h6>Pengaturan Sistem</h6>
+                                    <p class="small text-muted">Konfigurasi aplikasi dan fitur</p>
+                                    <button class="btn btn-dark btn-sm" onclick="showSystemSettings()">
+                                        Pengaturan
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <!-- Recent Users -->
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-user-plus me-2"></i>Pengguna Terbaru</h5>
+                    <a href="{{ url_for('admin_users') }}" class="btn btn-sm btn-outline-primary">Lihat Semua</a>
+                </div>
+                <div class="card-body">
+                    {% if recent_users %}
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Pengguna</th>
+                                        <th>Email</th>
+                                        <th>Bergabung</th>
+                                        <th>Status</th>
+                                        <th>Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for user in recent_users %}
+                                    <tr>
+                                        <td>
+                                            <strong>{{ user.get_full_name() }}</strong><br>
+                                            <small class="text-muted">@{{ user.username }}</small>
+                                        </td>
+                                        <td>{{ user.email }}</td>
+                                        <td>{{ user.created_at.strftime('%d %b %Y') }}</td>
+                                        <td>
+                                            {% if user.active %}
+                                                <span class="badge bg-success">Aktif</span>
+                                            {% else %}
+                                                <span class="badge bg-danger">Non-aktif</span>
+                                            {% endif %}
+                                            {% if user.is_admin %}
+                                                <span class="badge bg-warning">Owner</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if not user.is_admin and user.id != current_user.id %}
+                                            <div class="btn-group btn-group-sm">
+                                                <button class="btn btn-outline-danger btn-sm" onclick="suspendUser({{ user.id }}, '{{ user.username }}')">
+                                                    <i class="fas fa-ban"></i>
+                                                </button>
+                                            </div>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-muted text-center py-3">Tidak ada pengguna ditemukan.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Recent Products -->
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-box me-2"></i>Produk Terbaru</h5>
+                    <a href="{{ url_for('browse_products') }}" class="btn btn-sm btn-outline-primary">Lihat Semua</a>
+                </div>
+                <div class="card-body">
+                    {% if recent_products %}
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Produk</th>
+                                        <th>Pemilik</th>
+                                        <th>Kategori</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for product in recent_products %}
+                                    <tr>
+                                        <td>
+                                            <strong>{{ product.title }}</strong><br>
+                                            <small class="text-muted">{{ product.created_at.strftime('%d %b %Y') }}</small>
+                                        </td>
+                                        <td>{{ product.owner.username }}</td>
+                                        <td>{{ product.category.name }}</td>
+                                        <td>
+                                            {% if product.is_available %}
+                                                <span class="badge bg-success">Tersedia</span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">Terbarter</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-muted text-center py-3">Tidak ada produk ditemukan.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modals -->
+<!-- Suspend User Modal -->
+<div class="modal fade" id="suspendModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Suspend Pengguna</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="suspendForm" method="POST">
+                <div class="modal-body">
+                    <p>Apakah Anda yakin ingin menonaktifkan pengguna <strong id="suspendUsername"></strong>?</p>
+                    <div class="mb-3">
+                        <label for="suspendReason" class="form-label">Alasan Penonaktifan:</label>
+                        <textarea class="form-control" id="suspendReason" name="reason" rows="3" required>Pelanggaran kebijakan platform</textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-danger">Suspend</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function suspendUser(userId, username) {
+    document.getElementById('suspendUsername').textContent = username;
+    document.getElementById('suspendForm').action = `/admin/suspend_user/${userId}`;
+    new bootstrap.Modal(document.getElementById('suspendModal')).show();
+}
+
+function showSystemAlert() {
+    alert('Fitur peringatan sistem akan segera tersedia');
+}
+
+function showMaintenanceMode() {
+    alert('Fitur mode maintenance akan segera tersedia');
+}
+
+function showStoreManagement() {
+    alert('Fitur kelola toko akan segera tersedia');
+}
+
+function showSystemReports() {
+    alert('Fitur laporan sistem akan segera tersedia');
+}
+
+function showSystemSettings() {
+    alert('Fitur pengaturan sistem akan segera tersedia');
+}
+</script>
+{% endblock %}

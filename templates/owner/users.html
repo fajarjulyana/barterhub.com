@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+
+{% block title %}Kelola Pengguna - BarterHub{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('owner_dashboard') }}">Owner</a></li>
+                    <li class="breadcrumb-item active">Pengguna</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Daftar Pengguna</h3>
+                    <div class="card-tools">
+                        <a href="{{ url_for('admin.create_user') }}" class="btn btn-primary btn-sm">Tambah Pengguna Baru</a>
+                    </div>
+                </div>
+                <div class="card-body table-responsive p-0">
+                    <table class="table table-hover text-nowrap">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Nama Pengguna</th>
+                                <th>Email</th>
+                                <th>Role</th>
+                                <th>Status</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for user in users %}
+                            <tr>
+                                <td>{{ user.id }}</td>
+                                <td>{{ user.username }}</td>
+                                <td>{{ user.email }}</td>
+                                <td>{{ user.role }}</td>
+                                <td>{{ 'Aktif' if user.is_active else 'Tidak Aktif' }}</td>
+                                <td>
+                                    <a href="{{ url_for('admin.edit_user', user_id=user.id) }}" class="btn btn-warning btn-sm">Edit</a>
+                                    {% if user.is_active %}
+                                    <a href="{{ url_for('admin.deactivate_user', user_id=user.id) }}" class="btn btn-danger btn-sm">Nonaktifkan</a>
+                                    {% else %}
+                                    <a href="{{ url_for('admin.activate_user', user_id=user.id) }}" class="btn btn-success btn-sm">Aktifkan</a>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

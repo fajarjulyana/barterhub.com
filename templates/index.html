@@ -1,0 +1,286 @@
+
+{% extends "base.html" %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section bg-gradient-primary text-white py-5">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <h1 class="display-4 fw-bold mb-3">
+                    {% if user_language() == 'en' %}
+                        Trade What You Have for What You Need
+                    {% else %}
+                        Tukar Barang yang Anda Miliki dengan yang Anda Butuhkan
+                    {% endif %}
+                </h1>
+                <p class="lead mb-4">
+                    {% if user_language() == 'en' %}
+                        Join BarterHub, the modern marketplace where goods exchange hands without money. Discover, trade, and build connections in your community.
+                    {% else %}
+                        Bergabunglah dengan BarterHub, pasar modern di mana barang ditukar tanpa menggunakan uang. Temukan, tukar, dan bangun koneksi di komunitas Anda.
+                    {% endif %}
+                </p>
+                <div class="d-flex gap-3">
+                    <a href="{{ url_for('browse_products') }}" class="btn btn-light btn-lg">
+                        <i class="fas fa-search me-2"></i>
+                        {% if user_language() == 'en' %}Browse Items{% else %}Jelajahi Barang{% endif %}
+                    </a>
+                    {% if not current_user.is_authenticated %}
+                    <a href="{{ url_for('register') }}" class="btn btn-outline-light btn-lg">
+                        <i class="fas fa-user-plus me-2"></i>
+                        {% if user_language() == 'en' %}Join Now{% else %}Bergabung Sekarang{% endif %}
+                    </a>
+                    {% else %}
+                    <a href="{{ url_for('add_product') }}" class="btn btn-outline-light btn-lg">
+                        <i class="fas fa-plus me-2"></i>
+                        {% if user_language() == 'en' %}List Item{% else %}Daftarkan Barang{% endif %}
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-lg-6 text-center">
+                <img src="https://pixabay.com/get/geaf4568b5f78e39caa68f7a3bed81c310a38ce6b2ae000dc0a00e5034a8471f628641c5630e74377f434a39251c616f1ac3d82c89200bbf07965b49aaa047152_1280.jpg" 
+                     alt="{% if user_language() == 'en' %}Barter Trading{% else %}Perdagangan Barter{% endif %}" class="img-fluid rounded shadow-lg">
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="row text-center mb-5">
+            <div class="col-12">
+                <h2 class="display-5 fw-bold mb-3">
+                    {% if user_language() == 'en' %}How BarterHub Works{% else %}Cara Kerja BarterHub{% endif %}
+                </h2>
+                <p class="lead text-muted">
+                    {% if user_language() == 'en' %}Simple steps to start trading{% else %}Langkah mudah untuk mulai berdagang{% endif %}
+                </p>
+            </div>
+        </div>
+        
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="feature-card text-center p-4 h-100">
+                    <div class="feature-icon bg-primary text-white rounded-circle mx-auto mb-3">
+                        <i class="fas fa-upload fa-2x"></i>
+                    </div>
+                    <h4>
+                        {% if user_language() == 'en' %}List Your Items{% else %}Daftarkan Barang Anda{% endif %}
+                    </h4>
+                    <p class="text-muted">
+                        {% if user_language() == 'en' %}
+                            Upload photos and descriptions of items you want to trade.
+                        {% else %}
+                            Unggah foto dan deskripsi barang yang ingin Anda tukar.
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="feature-card text-center p-4 h-100">
+                    <div class="feature-icon bg-success text-white rounded-circle mx-auto mb-3">
+                        <i class="fas fa-search fa-2x"></i>
+                    </div>
+                    <h4>
+                        {% if user_language() == 'en' %}Find What You Want{% else %}Temukan yang Anda Inginkan{% endif %}
+                    </h4>
+                    <p class="text-muted">
+                        {% if user_language() == 'en' %}
+                            Browse categories and search for items you need.
+                        {% else %}
+                            Jelajahi kategori dan cari barang yang Anda butuhkan.
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="feature-card text-center p-4 h-100">
+                    <div class="feature-icon bg-warning text-white rounded-circle mx-auto mb-3">
+                        <i class="fas fa-handshake fa-2x"></i>
+                    </div>
+                    <h4>
+                        {% if user_language() == 'en' %}Make the Trade{% else %}Lakukan Pertukaran{% endif %}
+                    </h4>
+                    <p class="text-muted">
+                        {% if user_language() == 'en' %}
+                            Propose trades and connect with other users to exchange items.
+                        {% else %}
+                            Ajukan penawaran dan terhubung dengan pengguna lain untuk menukar barang.
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Recent Products Section -->
+{% if recent_products %}
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="row mb-4">
+            <div class="col-12 text-center">
+                <h2 class="display-6 fw-bold mb-3">
+                    {% if user_language() == 'en' %}Recent Listings{% else %}Daftar Terbaru{% endif %}
+                </h2>
+                <p class="lead text-muted">
+                    {% if user_language() == 'en' %}
+                        Discover the latest items available for trade
+                    {% else %}
+                        Temukan barang terbaru yang tersedia untuk ditukar
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+        
+        <div class="row g-4">
+            {% for product in recent_products %}
+            <div class="col-lg-3 col-md-6">
+                <div class="card product-card h-100 shadow-sm">
+                    {% if product.image_filename %}
+                    <img src="{{ url_for('static', filename='uploads/' + product.image_filename) }}" 
+                         class="card-img-top" alt="{{ product.title }}" style="height: 200px; object-fit: cover;">
+                    {% else %}
+                    <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
+                        <i class="fas fa-image fa-3x text-muted"></i>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title">{{ product.title }}</h5>
+                        <p class="card-text text-muted small">{{ product.description[:100] }}{% if product.description|length > 100 %}...{% endif %}</p>
+                        <div class="mt-auto">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="badge bg-secondary">{{ product.category.name }}</span>
+                                <span class="badge bg-info">{{ product.condition }}</span>
+                            </div>
+                            <a href="{{ url_for('product_detail', product_id=product.id) }}" class="btn btn-primary btn-sm w-100">
+                                {% if user_language() == 'en' %}View Details{% else %}Lihat Detail{% endif %}
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <div class="text-center mt-4">
+            <a href="{{ url_for('browse_products') }}" class="btn btn-outline-primary btn-lg">
+                {% if user_language() == 'en' %}View All Items{% else %}Lihat Semua Barang{% endif %}
+                <i class="fas fa-arrow-right ms-2"></i>
+            </a>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Categories Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="row mb-4">
+            <div class="col-12 text-center">
+                <h2 class="display-6 fw-bold mb-3">
+                    {% if user_language() == 'en' %}Browse by Category{% else %}Jelajahi berdasarkan Kategori{% endif %}
+                </h2>
+                <p class="lead text-muted">
+                    {% if user_language() == 'en' %}Find items in your favorite categories{% else %}Temukan barang di kategori favorit Anda{% endif %}
+                </p>
+            </div>
+        </div>
+        
+        <div class="row g-3">
+            {% for category in categories %}
+            <div class="col-lg-2 col-md-3 col-sm-4 col-6">
+                <a href="{{ url_for('browse_products', category=category.id) }}" 
+                   class="category-link text-decoration-none">
+                    <div class="category-card text-center p-3 border rounded h-100">
+                        <div class="category-icon mb-2">
+                            {% if category.name == 'Electronics' %}
+                                <i class="fas fa-laptop fa-2x text-primary"></i>
+                            {% elif category.name == 'Clothing & Accessories' %}
+                                <i class="fas fa-tshirt fa-2x text-success"></i>
+                            {% elif category.name == 'Home & Garden' %}
+                                <i class="fas fa-home fa-2x text-warning"></i>
+                            {% elif category.name == 'Sports & Outdoor' %}
+                                <i class="fas fa-football-ball fa-2x text-danger"></i>
+                            {% elif category.name == 'Books & Media' %}
+                                <i class="fas fa-book fa-2x text-info"></i>
+                            {% elif category.name == 'Toys & Games' %}
+                                <i class="fas fa-gamepad fa-2x text-purple"></i>
+                            {% elif category.name == 'Automotive' %}
+                                <i class="fas fa-car fa-2x text-dark"></i>
+                            {% elif category.name == 'Health & Beauty' %}
+                                <i class="fas fa-heart fa-2x text-pink"></i>
+                            {% elif category.name == 'Collectibles' %}
+                                <i class="fas fa-gem fa-2x text-secondary"></i>
+                            {% else %}
+                                <i class="fas fa-box fa-2x text-muted"></i>
+                            {% endif %}
+                        </div>
+                        <h6 class="category-name mb-0">
+                            {% if user_language() == 'en' %}
+                                {{ category.name }}
+                            {% else %}
+                                {% if category.name == 'Electronics' %}Elektronik
+                                {% elif category.name == 'Clothing & Accessories' %}Pakaian & Aksesoris
+                                {% elif category.name == 'Home & Garden' %}Rumah & Taman
+                                {% elif category.name == 'Sports & Outdoor' %}Olahraga & Outdoor
+                                {% elif category.name == 'Books & Media' %}Buku & Media
+                                {% elif category.name == 'Toys & Games' %}Mainan & Permainan
+                                {% elif category.name == 'Automotive' %}Otomotif
+                                {% elif category.name == 'Health & Beauty' %}Kesehatan & Kecantikan
+                                {% elif category.name == 'Collectibles' %}Koleksi
+                                {% else %}Lainnya
+                                {% endif %}
+                            {% endif %}
+                        </h6>
+                    </div>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="py-5 bg-primary text-white">
+    <div class="container text-center">
+        <div class="row">
+            <div class="col-lg-8 mx-auto">
+                <h2 class="display-6 fw-bold mb-3">
+                    {% if user_language() == 'en' %}Ready to Start Trading?{% else %}Siap Mulai Berdagang?{% endif %}
+                </h2>
+                <p class="lead mb-4">
+                    {% if user_language() == 'en' %}
+                        Join thousands of users who are already trading items they love.
+                    {% else %}
+                        Bergabunglah dengan ribuan pengguna yang sudah menukar barang yang mereka sukai.
+                    {% endif %}
+                </p>
+                {% if not current_user.is_authenticated %}
+                <a href="{{ url_for('register') }}" class="btn btn-light btn-lg me-3">
+                    <i class="fas fa-user-plus me-2"></i>
+                    {% if user_language() == 'en' %}Sign Up Free{% else %}Daftar Gratis{% endif %}
+                </a>
+                <a href="{{ url_for('browse_products') }}" class="btn btn-outline-light btn-lg">
+                    <i class="fas fa-eye me-2"></i>
+                    {% if user_language() == 'en' %}Browse Items{% else %}Jelajahi Barang{% endif %}
+                </a>
+                {% else %}
+                <a href="{{ url_for('add_product') }}" class="btn btn-light btn-lg me-3">
+                    <i class="fas fa-plus me-2"></i>
+                    {% if user_language() == 'en' %}List Your First Item{% else %}Daftarkan Barang Pertama Anda{% endif %}
+                </a>
+                <a href="{{ url_for('dashboard') }}" class="btn btn-outline-light btn-lg">
+                    <i class="fas fa-tachometer-alt me-2"></i>
+                    {% if user_language() == 'en' %}Go to Dashboard{% else %}Ke Dasbor{% endif %}
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
