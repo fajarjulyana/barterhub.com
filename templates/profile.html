@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+
+{% block title %}Profile - BarterHub{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="display-6 fw-bold mb-4">My Profile</h1>
+        </div>
+    </div>
+    
+    <div class="row">
+        <!-- Profile Info -->
+        <div class="col-lg-4 mb-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    <div class="profile-avatar mb-3">
+                        <i class="fas fa-user-circle fa-5x text-primary"></i>
+                    </div>
+                    <h4 class="mb-1">{{ current_user.get_full_name() }}</h4>
+                    <p class="text-muted mb-3">@{{ current_user.username }}</p>
+                    
+                    <div class="profile-stats">
+                        <div class="row text-center">
+                            <div class="col-4">
+                                <h5 class="mb-0">{{ user_products|length }}</h5>
+                                <small class="text-muted">Items Listed</small>
+                            </div>
+                            <div class="col-4">
+                                <h5 class="mb-0">{{ completed_barters }}</h5>
+                                <small class="text-muted">Successful Trades</small>
+                            </div>
+                            <div class="col-4">
+                                <h5 class="mb-0">{{ current_user.created_at.strftime('%Y') }}</h5>
+                                <small class="text-muted">Member Since</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Contact Info -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="fas fa-address-card me-2"></i>Contact Information</h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label"><i class="fas fa-envelope me-2"></i>Email</label>
+                        <p class="mb-0">{{ current_user.email }}</p>
+                    </div>
+                    {% if current_user.phone %}
+                    <div class="mb-3">
+                        <label class="form-label"><i class="fas fa-phone me-2"></i>Phone</label>
+                        <p class="mb-0">{{ current_user.phone }}</p>
+                    </div>
+                    {% endif %}
+                    <div>
+                        <label class="form-label"><i class="fas fa-calendar me-2"></i>Joined</label>
+                        <p class="mb-0">{{ current_user.created_at.strftime('%B %d, %Y') }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- My Items -->
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-box me-2"></i>My Items</h5>
+                    <a href="{{ url_for('add_product') }}" class="btn btn-primary btn-sm">
+                        <i class="fas fa-plus me-1"></i>Add Item
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if user_products %}
+                        <div class="row g-3">
+                            {% for product in user_products %}
+                            <div class="col-md-6">
+                                <div class="card product-card h-100">
+                                    {% if product.image_filename %}
+                                    <img src="{{ url_for('static', filename='uploads/' + product.image_filename) }}" 
+                                         class="card-img-top" alt="{{ product.title }}" style="height: 150px; object-fit: cover;">
+                                    {% else %}
+                                    <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 150px;">
+                                        <i class="fas fa-image fa-2x text-muted"></i>
+                                    </div>
+                                    {% endif %}
+                                    
+                                    <div class="card-body d-flex flex-column">
+                                        <h6 class="card-title">{{ product.title }}</h6>
+                                        <p class="card-text text-muted small mb-2">
+                                            {{ product.description[:80] }}{% if product.description|length > 80 %}...{% endif %}
+                                        </p>
+                                        
+                                        <div class="mt-auto">
+                                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                                <span class="badge bg-secondary">{{ product.category.name }}</span>
+                                                <span class="badge bg-info">{{ product.condition }}</span>
+                                            </div>
+                                            
+                                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                                <small class="text-muted">Listed: {{ product.created_at.strftime('%b %d, %Y') }}</small>
+                                                {% if product.is_available %}
+                                                    <span class="badge bg-success">Available</span>
+                                                {% else %}
+                                                    <span class="badge bg-secondary">Traded</span>
+                                                {% endif %}
+                                            </div>
+                                            
+                                            <a href="{{ url_for('product_detail', product_id=product.id) }}" 
+                                               class="btn btn-outline-primary btn-sm w-100">
+                                                View Details
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-box-open fa-4x text-muted mb-3"></i>
+                            <h5>No items listed yet</h5>
+                            <p class="text-muted mb-4">Start trading by listing your first item!</p>
+                            <a href="{{ url_for('add_product') }}" class="btn btn-primary">
+                                <i class="fas fa-plus me-2"></i>List Your First Item
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

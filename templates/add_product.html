@@ -1,0 +1,236 @@
+{% extends "base.html" %}
+
+{% block title %}List New Item - BarterHub{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header">
+                    <h3 class="mb-0"><i class="fas fa-plus me-2"></i>List New Item</h3>
+                </div>
+                <div class="card-body">
+                    <form method="POST" enctype="multipart/form-data">
+                        <div class="mb-3">
+                            <label for="title" class="form-label">Item Title *</label>
+                            <input type="text" class="form-control" id="title" name="title" required 
+                                   placeholder="Enter a descriptive title for your item">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Description *</label>
+                            <textarea class="form-control" id="description" name="description" rows="4" required
+                                      placeholder="Describe your item in detail. Include condition, age, brand, etc."></textarea>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="category_id" class="form-label">Category *</label>
+                                <select class="form-select" id="category_id" name="category_id" required>
+                                    <option value="">Select a category</option>
+                                    {% for category in categories %}
+                                    <option value="{{ category.id }}">{{ category.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="condition" class="form-label">Condition *</label>
+                                <select class="form-select" id="condition" name="condition" required>
+                                    <option value="">Select condition</option>
+                                    <option value="New">New</option>
+                                    <option value="Like New">Like New</option>
+                                    <option value="Very Good">Very Good</option>
+                                    <option value="Good">Good</option>
+                                    <option value="Fair">Fair</option>
+                                    <option value="Poor">Poor</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="estimated_value" class="form-label">Estimated Value (Optional)</label>
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                <input type="number" class="form-control" id="estimated_value" name="estimated_value" 
+                                       step="0.01" placeholder="0.00">
+                            </div>
+                            <div class="form-text">Help others understand the value of your item</div>
+                        </div>
+                        
+                        <!-- Barter Value Factors -->
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h6 class="mb-0"><i class="fas fa-calculator me-2"></i>Faktor Nilai Barter</h6>
+                                <small class="text-muted">Tentukan nilai barter berdasarkan faktor-faktor berikut (skala 1-10)</small>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="utility_score" class="form-label">
+                                            <i class="fas fa-heart me-1 text-danger"></i>Kebutuhan (Utility)
+                                        </label>
+                                        <input type="range" class="form-range" id="utility_score" name="utility_score" 
+                                               min="1" max="10" value="5" oninput="updateBarterValue()">
+                                        <div class="d-flex justify-content-between">
+                                            <small>Tidak dibutuhkan</small>
+                                            <span id="utility_value" class="badge bg-primary">5</span>
+                                            <small>Sangat dibutuhkan</small>
+                                        </div>
+                                        <small class="text-muted">Seberapa dibutuhkan barang ini oleh orang lain?</small>
+                                    </div>
+                                    
+                                    <div class="col-md-6 mb-3">
+                                        <label for="scarcity_score" class="form-label">
+                                            <i class="fas fa-gem me-1 text-warning"></i>Kelangkaan (Scarcity)
+                                        </label>
+                                        <input type="range" class="form-range" id="scarcity_score" name="scarcity_score" 
+                                               min="1" max="10" value="5" oninput="updateBarterValue()">
+                                        <div class="d-flex justify-content-between">
+                                            <small>Umum</small>
+                                            <span id="scarcity_value" class="badge bg-primary">5</span>
+                                            <small>Langka</small>
+                                        </div>
+                                        <small class="text-muted">Seberapa sulit mendapatkan barang ini?</small>
+                                    </div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="durability_score" class="form-label">
+                                            <i class="fas fa-shield-alt me-1 text-success"></i>Daya Tahan (Durability)
+                                        </label>
+                                        <input type="range" class="form-range" id="durability_score" name="durability_score" 
+                                               min="1" max="10" value="5" oninput="updateBarterValue()">
+                                        <div class="d-flex justify-content-between">
+                                            <small>Mudah rusak</small>
+                                            <span id="durability_value" class="badge bg-primary">5</span>
+                                            <small>Sangat tahan lama</small>
+                                        </div>
+                                        <small class="text-muted">Seberapa tahan lama barang ini?</small>
+                                    </div>
+                                    
+                                    <div class="col-md-6 mb-3">
+                                        <label for="portability_score" class="form-label">
+                                            <i class="fas fa-truck me-1 text-info"></i>Kemudahan Dibawa (Portability)
+                                        </label>
+                                        <input type="range" class="form-range" id="portability_score" name="portability_score" 
+                                               min="1" max="10" value="5" oninput="updateBarterValue()">
+                                        <div class="d-flex justify-content-between">
+                                            <small>Sulit dibawa</small>
+                                            <span id="portability_value" class="badge bg-primary">5</span>
+                                            <small>Mudah dibawa</small>
+                                        </div>
+                                        <small class="text-muted">Seberapa mudah memindahkan barang ini?</small>
+                                    </div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="seasonal_factor" class="form-label">
+                                            <i class="fas fa-calendar me-1 text-primary"></i>Faktor Musiman
+                                        </label>
+                                        <select class="form-select" id="seasonal_factor" name="seasonal_factor" onchange="updateBarterValue()">
+                                            <option value="0.7">Nilai turun (musim sepi)</option>
+                                            <option value="1.0" selected>Nilai stabil (sepanjang tahun)</option>
+                                            <option value="1.3">Nilai naik (musim tinggi)</option>
+                                            <option value="1.5">Nilai sangat tinggi (event khusus)</option>
+                                        </select>
+                                        <small class="text-muted">Apakah nilai barang ini dipengaruhi musim?</small>
+                                    </div>
+                                    
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">
+                                            <i class="fas fa-star me-1 text-warning"></i>Nilai Barter Total
+                                        </label>
+                                        <div class="p-3 bg-light rounded text-center">
+                                            <h4 id="total_barter_value" class="text-primary mb-0">25</h4>
+                                            <small class="text-muted">Poin Barter</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="image" class="form-label">Item Photo</label>
+                            <input type="file" class="form-control" id="image" name="image" 
+                                   accept="image/*">
+                            <div class="form-text">Upload a clear photo of your item (PNG, JPG, GIF - max 16MB)</div>
+                        </div>
+                        
+                        <div class="d-flex gap-3">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-check me-2"></i>List Item
+                            </button>
+                            <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times me-2"></i>Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Update barter value calculation
+function updateBarterValue() {
+    const utility = parseInt(document.getElementById('utility_score').value);
+    const scarcity = parseInt(document.getElementById('scarcity_score').value);
+    const durability = parseInt(document.getElementById('durability_score').value);
+    const portability = parseInt(document.getElementById('portability_score').value);
+    const seasonal = parseFloat(document.getElementById('seasonal_factor').value);
+    
+    // Update individual value displays
+    document.getElementById('utility_value').textContent = utility;
+    document.getElementById('scarcity_value').textContent = scarcity;
+    document.getElementById('durability_value').textContent = durability;
+    document.getElementById('portability_value').textContent = portability;
+    
+    // Calculate total barter value
+    const baseValue = utility + scarcity + durability + portability;
+    const totalValue = Math.round(baseValue * seasonal);
+    document.getElementById('total_barter_value').textContent = totalValue;
+    
+    // Update color based on value
+    const valueElement = document.getElementById('total_barter_value');
+    if (totalValue >= 35) {
+        valueElement.className = 'text-success mb-0';
+    } else if (totalValue >= 25) {
+        valueElement.className = 'text-primary mb-0';
+    } else if (totalValue >= 15) {
+        valueElement.className = 'text-warning mb-0';
+    } else {
+        valueElement.className = 'text-danger mb-0';
+    }
+}
+
+// Initialize barter value calculation
+document.addEventListener('DOMContentLoaded', updateBarterValue);
+
+// Preview image before upload
+document.getElementById('image').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            let preview = document.getElementById('image-preview');
+            if (!preview) {
+                preview = document.createElement('img');
+                preview.id = 'image-preview';
+                preview.className = 'img-thumbnail mt-2';
+                preview.style.maxWidth = '200px';
+                document.getElementById('image').parentNode.appendChild(preview);
+            }
+            preview.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    }
+});
+</script>
+{% endblock %}

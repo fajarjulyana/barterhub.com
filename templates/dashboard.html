@@ -1,0 +1,202 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - BarterHub{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="display-6 fw-bold">Dashboard</h1>
+                <a href="{{ url_for('add_product') }}" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>List New Item
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Stats Cards -->
+    <div class="row g-4 mb-5">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="card-title">My Items</h6>
+                            <h3 class="mb-0">{{ user_products|length }}</h3>
+                        </div>
+                        <i class="fas fa-box fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="card-title">Received Proposals</h6>
+                            <h3 class="mb-0">{{ received_proposals|length }}</h3>
+                        </div>
+                        <i class="fas fa-inbox fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="card-title">Sent Proposals</h6>
+                            <h3 class="mb-0">{{ sent_proposals|length }}</h3>
+                        </div>
+                        <i class="fas fa-paper-plane fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="card-title">Unread Messages</h6>
+                            <h3 class="mb-0">{{ unread_messages }}</h3>
+                        </div>
+                        <i class="fas fa-envelope fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <!-- My Items -->
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-box me-2"></i>My Items</h5>
+                    <a href="{{ url_for('add_product') }}" class="btn btn-sm btn-outline-primary">Add Item</a>
+                </div>
+                <div class="card-body">
+                    {% if user_products %}
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Item</th>
+                                        <th>Category</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for product in user_products[:5] %}
+                                    <tr>
+                                        <td>
+                                            <strong>{{ product.title }}</strong><br>
+                                            <small class="text-muted">{{ product.created_at.strftime('%b %d, %Y') }}</small>
+                                        </td>
+                                        <td>{{ product.category.name }}</td>
+                                        <td>
+                                            {% if product.is_available %}
+                                                <span class="badge bg-success">Available</span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">Traded</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <a href="{{ url_for('product_detail', product_id=product.id) }}" 
+                                               class="btn btn-sm btn-outline-primary">View</a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% if user_products|length > 5 %}
+                        <div class="text-center">
+                            <a href="{{ url_for('profile') }}" class="btn btn-sm btn-outline-secondary">View All Items</a>
+                        </div>
+                        {% endif %}
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-box-open fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">You haven't listed any items yet.</p>
+                            <a href="{{ url_for('add_product') }}" class="btn btn-primary">List Your First Item</a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Recent Proposals -->
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-handshake me-2"></i>Recent Proposals</h5>
+                </div>
+                <div class="card-body">
+                    {% if received_proposals or sent_proposals %}
+                        <!-- Received Proposals -->
+                        {% if received_proposals %}
+                        <h6 class="text-primary">Received</h6>
+                        {% for proposal in received_proposals[:3] %}
+                        <div class="proposal-item border-start border-primary border-3 ps-3 mb-3">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <strong>{{ proposal.proposer.username }}</strong> wants to trade 
+                                    <strong>{{ proposal.offered_product.title }}</strong> for 
+                                    <strong>{{ proposal.wanted_product.title }}</strong>
+                                    <br>
+                                    <small class="text-muted">{{ proposal.created_at.strftime('%b %d, %Y at %I:%M %p') }}</small>
+                                </div>
+                                <span class="badge bg-{{ 'success' if proposal.status == 'accepted' else 'warning' if proposal.status == 'pending' else 'secondary' }}">
+                                    {{ proposal.status.title() }}
+                                </span>
+                            </div>
+                            {% if proposal.status == 'pending' %}
+                            <div class="mt-2">
+                                <a href="{{ url_for('respond_proposal', proposal_id=proposal.id, action='accept') }}" 
+                                   class="btn btn-sm btn-success me-1">Accept</a>
+                                <a href="{{ url_for('respond_proposal', proposal_id=proposal.id, action='reject') }}" 
+                                   class="btn btn-sm btn-outline-danger">Reject</a>
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                        {% endif %}
+                        
+                        <!-- Sent Proposals -->
+                        {% if sent_proposals %}
+                        <h6 class="text-success mt-3">Sent</h6>
+                        {% for proposal in sent_proposals[:3] %}
+                        <div class="proposal-item border-start border-success border-3 ps-3 mb-3">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    You offered <strong>{{ proposal.offered_product.title }}</strong> for 
+                                    <strong>{{ proposal.wanted_product.title }}</strong>
+                                    <br>
+                                    <small class="text-muted">{{ proposal.created_at.strftime('%b %d, %Y at %I:%M %p') }}</small>
+                                </div>
+                                <span class="badge bg-{{ 'success' if proposal.status == 'accepted' else 'warning' if proposal.status == 'pending' else 'secondary' }}">
+                                    {{ proposal.status.title() }}
+                                </span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                        {% endif %}
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-handshake fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">No proposals yet. Start browsing items to make your first trade!</p>
+                            <a href="{{ url_for('browse_products') }}" class="btn btn-primary">Browse Items</a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

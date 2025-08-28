@@ -1,0 +1,260 @@
+{% extends "base.html" %}
+
+{% block title %}Buyer Dashboard - BarterHub{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="display-6 fw-bold">Buyer Dashboard</h1>
+                    <p class="text-muted mb-0">Temukan produk menarik untuk barter</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <a href="{{ url_for('browse_products') }}" class="btn btn-primary">
+                        <i class="fas fa-search me-2"></i>Jelajahi Produk
+                    </a>
+                    <a href="{{ url_for('add_product') }}" class="btn btn-success">
+                        <i class="fas fa-plus me-2"></i>Jual Produk
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Stats Cards -->
+    <div class="row mb-4">
+        <div class="col-md-4 mb-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="card-title">Proposal Dikirim</h6>
+                            <h3 class="mb-0">{{ total_proposals_sent }}</h3>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-paper-plane fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="card-title">Barter Berhasil</h6>
+                            <h3 class="mb-0">{{ successful_purchases }}</h3>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-check-circle fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="card-title">Pesan Baru</h6>
+                            <h3 class="mb-0">{{ unread_messages }}</h3>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-envelope fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Search & Filters -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <form method="GET" action="{{ url_for('browse_products') }}" class="row g-3">
+                        <div class="col-md-6">
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-search"></i></span>
+                                <input type="text" class="form-control" name="search" 
+                                       placeholder="Cari produk..." value="{{ request.args.get('search', '') }}">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <select class="form-select" name="category">
+                                <option value="">Semua Kategori</option>
+                                {% for category in categories %}
+                                <option value="{{ category.id }}" 
+                                        {% if request.args.get('category') == category.id|string %}selected{% endif %}>
+                                    {{ category.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <button type="submit" class="btn btn-primary w-100">Cari</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="row">
+        <!-- Recent Products -->
+        <div class="col-lg-8 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="fas fa-fire me-2"></i>Produk Terbaru</h5>
+                        <a href="{{ url_for('browse_products') }}" class="btn btn-sm btn-primary">
+                            <i class="fas fa-search me-1"></i>Lihat Semua
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if recent_products %}
+                    <div class="row">
+                        {% for product in recent_products %}
+                        <div class="col-md-4 col-sm-6 mb-3">
+                            <div class="card product-card h-100">
+                                {% if product.image_filename %}
+                                <img src="{{ url_for('static', filename='uploads/' + product.image_filename) }}" 
+                                     class="card-img-top" style="height: 150px; object-fit: cover;">
+                                {% else %}
+                                <div class="card-img-top bg-light d-flex align-items-center justify-content-center" 
+                                     style="height: 150px;">
+                                    <i class="fas fa-image fa-2x text-muted"></i>
+                                </div>
+                                {% endif %}
+                                
+                                <div class="card-body p-2">
+                                    <h6 class="card-title mb-1">{{ product.title }}</h6>
+                                    <p class="card-text small text-muted mb-2">{{ product.description[:50] }}{% if product.description|length > 50 %}...{% endif %}</p>
+                                    
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <div class="d-flex gap-1">
+                                            <span class="badge bg-primary">{{ product.get_final_barter_value() }} pts</span>
+                                            <span class="badge bg-secondary">{{ product.condition }}</span>
+                                        </div>
+                                        <small class="text-muted">{{ product.category.name }}</small>
+                                    </div>
+                                    
+                                    <div class="d-flex gap-1">
+                                        <a href="{{ url_for('product_detail', id=product.id) }}" 
+                                           class="btn btn-sm btn-primary flex-fill">
+                                            <i class="fas fa-eye me-1"></i>Detail
+                                        </a>
+                                        <a href="#" class="btn btn-sm btn-success"
+                                           onclick="showBarterModal({{ product.id }}, '{{ product.title }}')">
+                                            <i class="fas fa-exchange-alt"></i>
+                                        </a>
+                                    </div>
+                                    
+                                    <div class="mt-2">
+                                        <small class="text-muted">
+                                            <i class="fas fa-user me-1"></i>{{ product.owner.get_full_name() }}
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                        <h5>Belum Ada Produk</h5>
+                        <p class="text-muted">Produk dari penjual lain akan muncul di sini</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Activity Sidebar -->
+        <div class="col-lg-4">
+            <!-- My Proposals -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0"><i class="fas fa-paper-plane me-2"></i>Proposal Saya</h6>
+                        <a href="{{ url_for('proposals') }}" class="btn btn-sm btn-outline-primary">Lihat Semua</a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if sent_proposals %}
+                    <div class="list-group list-group-flush">
+                        {% for proposal in sent_proposals %}
+                        <div class="list-group-item px-0">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-1">{{ proposal.wanted_product.title }}</h6>
+                                    <p class="mb-1 small">
+                                        Kepada: {{ proposal.proposal_receiver.get_full_name() }}<br>
+                                        Ditukar: {{ proposal.offered_product.title }}
+                                    </p>
+                                    <small class="text-muted">{{ proposal.created_at.strftime('%d %b %Y') }}</small>
+                                </div>
+                                <span class="badge bg-{% if proposal.status == 'pending' %}warning{% elif proposal.status == 'accepted' %}success{% else %}danger{% endif %}">
+                                    {{ proposal.status.title() }}
+                                </span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-3">
+                        <i class="fas fa-inbox fa-2x text-muted mb-2"></i>
+                        <p class="text-muted mb-0">Belum ada proposal dikirim</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Quick Actions -->
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="fas fa-bolt me-2"></i>Aksi Cepat</h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('messages') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-envelope me-2"></i>Lihat Pesan
+                            {% if unread_messages > 0 %}
+                            <span class="badge bg-danger ms-2">{{ unread_messages }}</span>
+                            {% endif %}
+                        </a>
+                        <a href="{{ url_for('proposals') }}" class="btn btn-outline-success">
+                            <i class="fas fa-handshake me-2"></i>Kelola Proposal
+                        </a>
+                        <a href="{{ url_for('add_product') }}" class="btn btn-outline-warning">
+                            <i class="fas fa-plus me-2"></i>Jual Produk Juga
+                        </a>
+                        <a href="{{ url_for('contact_admin') }}" class="btn btn-outline-info">
+                            <i class="fas fa-headset me-2"></i>Bantuan Admin
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.product-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    transition: all 0.2s;
+}
+</style>
+{% endblock %}
