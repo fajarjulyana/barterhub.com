@@ -1,0 +1,276 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard Admin - BarterHub{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col">
+            <h2>
+                <i class="fas fa-tachometer-alt text-primary me-2"></i>Dashboard Admin
+            </h2>
+            <p class="text-muted">Kelola platform BarterHub dengan mudah</p>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row g-4 mb-5">
+        <div class="col-lg-3 col-md-6">
+            <div class="card border-0 shadow-sm bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="me-3">
+                            <i class="fas fa-users fs-2"></i>
+                        </div>
+                        <div>
+                            <div class="fs-4 fw-bold">{{ total_users }}</div>
+                            <div class="small opacity-75">Total Pengguna</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6">
+            <div class="card border-0 shadow-sm bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="me-3">
+                            <i class="fas fa-box fs-2"></i>
+                        </div>
+                        <div>
+                            <div class="fs-4 fw-bold">{{ total_products }}</div>
+                            <div class="small opacity-75">Total Produk</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6">
+            <div class="card border-0 shadow-sm bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="me-3">
+                            <i class="fas fa-handshake fs-2"></i>
+                        </div>
+                        <div>
+                            <div class="fs-4 fw-bold">{{ total_transactions }}</div>
+                            <div class="small opacity-75">Total Transaksi</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6">
+            <div class="card border-0 shadow-sm bg-warning text-dark">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="me-3">
+                            <i class="fas fa-clock fs-2"></i>
+                        </div>
+                        <div>
+                            <div class="fs-4 fw-bold">{{ active_transactions }}</div>
+                            <div class="small">Transaksi Aktif</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mb-5">
+        <div class="col">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-bolt me-2"></i>Aksi Cepat
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-lg-3 col-md-6">
+                            <a href="{{ url_for('admin.users') }}" class="btn btn-outline-primary w-100">
+                                <i class="fas fa-users me-2"></i>Kelola Pengguna
+                            </a>
+                        </div>
+                        <div class="col-lg-3 col-md-6">
+                            <a href="{{ url_for('admin.admin_products') }}" class="btn btn-outline-success w-100">
+                                <i class="fas fa-box me-2"></i>Kelola Produk
+                            </a>
+                        </div>
+                        <div class="col-lg-3 col-md-6">
+                            <a href="{{ url_for('admin.admin_transactions') }}" class="btn btn-outline-info w-100">
+                                <i class="fas fa-handshake me-2"></i>Kelola Transaksi
+                            </a>
+                        </div>
+                        <div class="col-lg-3 col-md-6">
+                            <a href="{{ url_for('products.add') }}" class="btn btn-outline-warning w-100">
+                                <i class="fas fa-plus me-2"></i>Tambah Produk
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Recent Users -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0">
+                        <i class="fas fa-user-plus me-2"></i>Pengguna Terbaru
+                    </h6>
+                    <a href="{{ url_for('admin.users') }}" class="btn btn-sm btn-outline-primary">Lihat Semua</a>
+                </div>
+                <div class="card-body p-0">
+                    {% if recent_users %}
+                    <div class="list-group list-group-flush">
+                        {% for user in recent_users %}
+                        <div class="list-group-item">
+                            <div class="d-flex align-items-center">
+                                <div class="me-3">
+                                    <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center" 
+                                         style="width: 40px; height: 40px;">
+                                        <i class="fas fa-user text-white"></i>
+                                    </div>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <div class="fw-semibold">{{ user.full_name }}</div>
+                                    <small class="text-muted">@{{ user.username }} • {{ user.role }}</small>
+                                </div>
+                                <div class="text-end">
+                                    <small class="text-muted">{{ user.created_at.strftime('%d/%m') }}</small>
+                                    {% if user.is_active %}
+                                        <div><span class="badge bg-success">Aktif</span></div>
+                                    {% else %}
+                                        <div><span class="badge bg-secondary">Nonaktif</span></div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center text-muted py-3">
+                        <i class="fas fa-users fs-3 mb-2"></i>
+                        <p class="mb-0">Belum ada pengguna terbaru</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Products -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0">
+                        <i class="fas fa-box me-2"></i>Produk Terbaru
+                    </h6>
+                    <a href="{{ url_for('admin.admin_products') }}" class="btn btn-sm btn-outline-success">Lihat Semua</a>
+                </div>
+                <div class="card-body p-0">
+                    {% if recent_products %}
+                    <div class="list-group list-group-flush">
+                        {% for product in recent_products %}
+                        <div class="list-group-item">
+                            <div class="d-flex align-items-center">
+                                <div class="me-3">
+                                    <img src="{{ url_for('static', filename='uploads/products/' + product.get_main_image()) }}" 
+                                         class="rounded" style="width: 40px; height: 40px; object-fit: cover;" 
+                                         alt="{{ product.title }}"
+                                         onerror="this.src='https://via.placeholder.com/40x40?text=No+Image'">
+                                </div>
+                                <div class="flex-grow-1">
+                                    <div class="fw-semibold">{{ product.title[:25] }}...</div>
+                                    <small class="text-muted">{{ product.owner.username }} • {{ product.total_points }} poin</small>
+                                </div>
+                                <div class="text-end">
+                                    <small class="text-muted">{{ product.created_at.strftime('%d/%m') }}</small>
+                                    {% if product.is_available %}
+                                        <div><span class="badge bg-success">Tersedia</span></div>
+                                    {% else %}
+                                        <div><span class="badge bg-secondary">Tidak Tersedia</span></div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center text-muted py-3">
+                        <i class="fas fa-box fs-3 mb-2"></i>
+                        <p class="mb-0">Belum ada produk terbaru</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Transactions -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0">
+                        <i class="fas fa-handshake me-2"></i>Transaksi Terbaru
+                    </h6>
+                    <a href="{{ url_for('admin.admin_transactions') }}" class="btn btn-sm btn-outline-info">Lihat Semua</a>
+                </div>
+                <div class="card-body p-0">
+                    {% if recent_transactions %}
+                    <div class="list-group list-group-flush">
+                        {% for transaction in recent_transactions %}
+                        <div class="list-group-item">
+                            <div class="d-flex align-items-center">
+                                <div class="me-3">
+                                    <div class="bg-info rounded-circle d-flex align-items-center justify-content-center" 
+                                         style="width: 40px; height: 40px;">
+                                        <i class="fas fa-handshake text-white"></i>
+                                    </div>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <div class="fw-semibold">#{{ transaction.id }}</div>
+                                    <small class="text-muted">
+                                        {{ transaction.seller.username }} ↔ {{ transaction.buyer.username }}
+                                    </small>
+                                </div>
+                                <div class="text-end">
+                                    <small class="text-muted">{{ transaction.created_at.strftime('%d/%m') }}</small>
+                                    <div>
+                                        {% if transaction.status == 'pending' %}
+                                            <span class="badge bg-warning">Pending</span>
+                                        {% elif transaction.status == 'agreed' %}
+                                            <span class="badge bg-info">Disepakati</span>
+                                        {% elif transaction.status == 'shipped' %}
+                                            <span class="badge bg-primary">Dikirim</span>
+                                        {% elif transaction.status == 'completed' %}
+                                            <span class="badge bg-success">Selesai</span>
+                                        {% elif transaction.status == 'cancelled' %}
+                                            <span class="badge bg-secondary">Dibatalkan</span>
+                                        {% elif transaction.status == 'dispute' %}
+                                            <span class="badge bg-danger">Sengketa</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center text-muted py-3">
+                        <i class="fas fa-handshake fs-3 mb-2"></i>
+                        <p class="mb-0">Belum ada transaksi terbaru</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
