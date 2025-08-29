@@ -1,0 +1,265 @@
+{% extends "base.html" %}
+
+{% block title %}Detail Proposal Barter{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Proposal Header -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="fas fa-handshake me-2"></i>Proposal Barter #{{ proposal.id }}
+                        </h5>
+                        <span class="badge bg-{% if proposal.status == 'pending' %}warning{% elif proposal.status == 'negotiating' %}info{% elif proposal.status == 'accepted' %}success{% else %}danger{% endif %} fs-6">
+                            {{ proposal.status.title() }}
+                        </span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Barang Ditawarkan</h6>
+                            <div class="d-flex align-items-center mb-3">
+                                {% if proposal.offered_product.image_filename %}
+                                <img src="{{ url_for('static', filename='uploads/' + proposal.offered_product.image_filename) }}" 
+                                     class="rounded me-3" style="width: 80px; height: 80px; object-fit: cover;">
+                                {% endif %}
+                                <div>
+                                    <strong>{{ proposal.offered_product.title }}</strong><br>
+                                    <small class="text-muted">Oleh: {{ proposal.proposer.get_full_name() }}</small><br>
+                                    <span class="badge bg-primary">{{ proposal.offered_product.get_final_barter_value() }} pts</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Barang Diinginkan</h6>
+                            <div class="d-flex align-items-center mb-3">
+                                {% if proposal.wanted_product.image_filename %}
+                                <img src="{{ url_for('static', filename='uploads/' + proposal.wanted_product.image_filename) }}" 
+                                     class="rounded me-3" style="width: 80px; height: 80px; object-fit: cover;">
+                                {% endif %}
+                                <div>
+                                    <strong>{{ proposal.wanted_product.title }}</strong><br>
+                                    <small class="text-muted">Oleh: {{ proposal.proposal_receiver.get_full_name() }}</small><br>
+                                    <span class="badge bg-primary">{{ proposal.wanted_product.get_final_barter_value() }} pts</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Negotiation History -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="fas fa-comments me-2"></i>Riwayat Negosiasi</h6>
+                </div>
+                <div class="card-body">
+                    {% if negotiations %}
+                        <div class="timeline">
+                            {% for negotiation in negotiations %}
+                            <div class="timeline-item mb-3">
+                                <div class="d-flex">
+                                    <div class="flex-shrink-0">
+                                        <div class="timeline-marker bg-{% if negotiation.sender_id == proposal.proposer_id %}primary{% else %}success{% endif %}">
+                                            <i class="fas fa-{% if negotiation.sender_id == proposal.proposer_id %}user{% else %}store{% endif %}"></i>
+                                        </div>
+                                    </div>
+                                    <div class="flex-grow-1 ms-3">
+                                        <div class="timeline-content">
+                                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                                <strong>{{ negotiation.sender.get_full_name() }}</strong>
+                                                <small class="text-muted">{{ negotiation.created_at.strftime('%d %b %Y, %H:%M') }}</small>
+                                            </div>
+
+                                            {% if negotiation.offer_price %}
+                                            <div class="alert alert-info mb-2">
+                                                <strong>Tawaran Harga:</strong> Rp {{ "{:,.0f}".format(negotiation.offer_price) }}
+                                                {% if negotiation.quantity_offered > 1 %}
+                                                <br><strong>Jumlah:</strong> {{ negotiation.quantity_offered }} unit
+                                                {% endif %}
+                                            </div>
+                                            {% endif %}
+
+                                            {% if negotiation.additional_items %}
+                                            <div class="mb-2">
+                                                <strong>Item Tambahan:</strong><br>
+                                                <span class="text-muted">{{ negotiation.additional_items }}</span>
+                                            </div>
+                                            {% endif %}
+
+                                            <p class="mb-0">{{ negotiation.message }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted text-center">Belum ada negosiasi dilakukan.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Panel -->
+        <div class="col-lg-4">
+            {% if proposal.status in ['pending', 'negotiating'] %}
+                {% if current_user.id == proposal.receiver_id %}
+                <!-- Seller Actions -->
+                <div class="card mb-3">
+                    <div class="card-header bg-success text-white">
+                        <h6 class="mb-0"><i class="fas fa-store me-2"></i>Aksi Penjual</h6>
+                    </div>
+                    <div class="card-body">
+                        <form method="POST" action="{{ url_for('set_asking_price', proposal_id=proposal.id) }}">
+                            <div class="mb-3">
+                                <label class="form-label">Harga yang Diminta (Rp)</label>
+                                <input type="number" name="asking_price" class="form-control" 
+                                       value="{{ proposal.seller_asking_price or '' }}" min="0" step="1000">
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Item Tambahan yang Diminta</label>
+                                <textarea name="additional_items" class="form-control" rows="3" 
+                                          placeholder="Contoh: Ditambah uang Rp 50.000">{{ proposal.additional_items_requested or '' }}</textarea>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Pesan</label>
+                                <textarea name="message" class="form-control" rows="2" 
+                                          placeholder="Pesan untuk pembeli..."></textarea>
+                            </div>
+
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-warning">
+                                    <i class="fas fa-tag me-1"></i>Tetapkan Harga
+                                </button>
+                                <a href="{{ url_for('respond_proposal', proposal_id=proposal.id, status='accepted') }}" 
+                                   class="btn btn-success" onclick="return confirm('Terima proposal ini?')">
+                                    <i class="fas fa-check me-1"></i>Terima Proposal
+                                </a>
+                                <a href="{{ url_for('respond_proposal', proposal_id=proposal.id, status='rejected') }}" 
+                                   class="btn btn-danger" onclick="return confirm('Tolak proposal ini?')">
+                                    <i class="fas fa-times me-1"></i>Tolak Proposal
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                {% elif current_user.id == proposal.proposer_id %}
+                <!-- Buyer Actions -->
+                <div class="card mb-3">
+                    <div class="card-header bg-primary text-white">
+                        <h6 class="mb-0"><i class="fas fa-user me-2"></i>Aksi Pembeli</h6>
+                    </div>
+                    <div class="card-body">
+                        {% if proposal.seller_asking_price %}
+                        <div class="alert alert-info">
+                            <strong>Harga Diminta Penjual:</strong><br>
+                            Rp {{ "{:,.0f}".format(proposal.seller_asking_price) }}
+                            {% if proposal.additional_items_requested %}
+                            <br><strong>Tambahan:</strong> {{ proposal.additional_items_requested }}
+                            {% endif %}
+                        </div>
+                        {% endif %}
+
+                        <form method="POST" action="{{ url_for('make_counter_offer', proposal_id=proposal.id) }}">
+                            <div class="mb-3">
+                                <label class="form-label">Tawaran Anda (Rp)</label>
+                                <input type="number" name="offer_price" class="form-control" 
+                                       value="{{ proposal.buyer_offer_price or '' }}" min="0" step="1000">
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Jumlah yang Ditawarkan</label>
+                                <input type="number" name="quantity" class="form-control" 
+                                       value="{{ proposal.quantity_requested or 1 }}" min="1">
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Item Tambahan</label>
+                                <textarea name="additional_items" class="form-control" rows="2" 
+                                          placeholder="Item tambahan yang bisa Anda berikan..."></textarea>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Pesan</label>
+                                <textarea name="message" class="form-control" rows="2" 
+                                          placeholder="Pesan untuk penjual..."></textarea>
+                            </div>
+
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-reply me-1"></i>Kirim Tawaran Balasan
+                                </button>
+                                {% if proposal.seller_asking_price %}
+                                <a href="{{ url_for('finalize_deal', proposal_id=proposal.id) }}" 
+                                   class="btn btn-success" onclick="return confirm('Setujui deal dengan harga yang diminta? Ini akan membuat struk resi transaksi.')">
+                                    <i class="fas fa-handshake me-1"></i>Setujui & Buat Struk Resi
+                                </a>
+                                {% endif %}
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                {% endif %}
+            {% elif proposal.status == 'accepted' %}
+                <div class="card">
+                    <div class="card-header bg-success text-white">
+                        <h6 class="mb-0"><i class="fas fa-check-circle me-2"></i>Deal Berhasil!</h6>
+                    </div>
+                    <div class="card-body text-center">
+                        <i class="fas fa-handshake fa-3x text-success mb-3"></i>
+                        <p>Proposal telah diterima. Lanjutkan ke proses pengiriman.</p>
+                        <button class="btn btn-primary">
+                            <i class="fas fa-shipping-fast me-1"></i>Atur Pengiriman
+                        </button>
+                    </div>
+                </div>
+            {% endif %}
+
+            <!-- Chat -->
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="fas fa-comments me-2"></i>Chat</h6>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('send_message', user_id=proposal.proposer_id if current_user.id == proposal.receiver_id else proposal.receiver_id) }}">
+                        <div class="mb-3">
+                            <textarea name="content" class="form-control" rows="3" 
+                                      placeholder="Kirim pesan..."></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-paper-plane me-1"></i>Kirim
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.timeline-marker {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+}
+
+.timeline-content {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 10px;
+    border-left: 4px solid #007bff;
+}
+</style>
+{% endblock %}

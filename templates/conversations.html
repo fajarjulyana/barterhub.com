@@ -1,0 +1,342 @@
+{% extends "base.html" %}
+
+{% block title %}Chat Conversations{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/chat.css') }}">
+<style>
+.conversation-card {
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+    background: white;
+    position: relative;
+    overflow: hidden;
+}
+
+.conversation-card:hover {
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    transform: translateY(-2px);
+    border-color: #28a745;
+}
+
+.conversation-card.unread {
+    border-left: 4px solid #28a745;
+    background: linear-gradient(90deg, #f8fff9 0%, #ffffff 100%);
+}
+
+.conversation-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    padding: 20px;
+}
+
+.conversation-link:hover {
+    text-decoration: none;
+    color: inherit;
+}
+
+.unread-badge {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: #dc3545;
+    color: white;
+    border-radius: 50%;
+    width: 25px;
+    height: 25px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.store-info {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.store-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: linear-gradient(45deg, #28a745, #20c997);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 18px;
+    margin-right: 15px;
+}
+
+.store-name {
+    font-weight: 600;
+    font-size: 18px;
+    margin-bottom: 3px;
+    color: #2c3e50;
+}
+
+.store-status {
+    font-size: 14px;
+    color: #7f8c8d;
+    display: flex;
+    align-items: center;
+}
+
+.online-dot, .offline-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 6px;
+}
+
+.online-dot {
+    background: #28a745;
+    animation: pulse 2s infinite;
+}
+
+.offline-dot {
+    background: #6c757d;
+}
+
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+}
+
+.product-preview {
+    display: flex;
+    align-items: center;
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 10px;
+    margin-top: 10px;
+}
+
+.product-image {
+    width: 60px;
+    height: 60px;
+    border-radius: 8px;
+    object-fit: cover;
+    margin-right: 12px;
+}
+
+.product-placeholder {
+    width: 60px;
+    height: 60px;
+    background: #e9ecef;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 12px;
+    color: #6c757d;
+}
+
+.product-details h6 {
+    margin: 0 0 5px 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #495057;
+}
+
+.product-price {
+    font-size: 13px;
+    color: #28a745;
+    font-weight: 600;
+}
+
+.conversation-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid #f1f3f4;
+}
+
+.last-message {
+    color: #6c757d;
+    font-size: 14px;
+    max-width: 60%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.message-time {
+    color: #9ca3af;
+    font-size: 12px;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: #6c757d;
+}
+
+.empty-state i {
+    font-size: 64px;
+    margin-bottom: 20px;
+    color: #dee2e6;
+}
+
+.chat-action-buttons {
+    margin-top: 10px;
+}
+
+.btn-sm-custom {
+    padding: 5px 12px;
+    font-size: 13px;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="conversation-container">
+        <!-- Header -->
+        <div class="header-title">
+            <h3 class="mb-1">
+                <i class="fas fa-comments me-2"></i>Chat dengan Toko
+            </h3>
+            <p class="mb-0 opacity-75">Percakapan Anda dengan penjual</p>
+        </div>
+
+        <!-- Search Box -->
+        <div class="search-box">
+            <input type="text" class="search-input" placeholder="🔍 Cari percakapan atau nama toko..." 
+                   id="searchConversations" onkeyup="filterConversations()">
+        </div>
+
+        <!-- Conversations List -->
+        <div id="conversationsList">
+            {% if conversations %}
+                {% for conversation in conversations %}
+                <div class="conversation-card {% if conversation.unread_count > 0 %}unread{% endif %}">
+                    <a href="{{ url_for('chat_with_user', user_id=conversation.other_user.id, product_id=conversation.product.id if conversation.product else '') }}" class="conversation-link">
+                        <div class="conversation-meta">
+                            <div class="store-info">
+                                <div class="store-avatar">
+                                    {{ conversation.other_user.first_name[0] }}{{ conversation.other_user.last_name[0] }}
+                                </div>
+                                <div>
+                                    <div class="store-name">
+                                        {% if conversation.user_role == 'buyer' %}
+                                            🏪 {{ conversation.other_user.get_full_name() }}
+                                        {% else %}
+                                            👤 {{ conversation.other_user.get_full_name() }}
+                                        {% endif %}
+                                    </div>
+                                    <div class="store-status">
+                                        {% if conversation.other_user.is_online %}
+                                            <span class="online-dot"></span>Online
+                                        {% else %}
+                                            <span class="offline-dot"></span>
+                                            Terakhir seen {{ conversation.other_user.last_seen.strftime('%d/%m %H:%M') if conversation.other_user.last_seen else 'Tidak diketahui' }}
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="message-time">
+                                {% if conversation.last_message_at %}
+                                    {{ conversation.last_message_at.strftime('%H:%M') }}
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Product Preview (if chat about specific product) -->
+                        {% if conversation.product %}
+                        <div class="product-preview">
+                            {% if conversation.product.get_primary_image() %}
+                            <img src="{{ conversation.product.get_primary_image().get_image_url() }}" 
+                                 alt="{{ conversation.product.title }}" class="product-image">
+                            {% else %}
+                            <div class="product-placeholder">
+                                <i class="fas fa-box"></i>
+                            </div>
+                            {% endif %}
+                            <div class="product-details">
+                                <h6>{{ conversation.product.title[:40] }}{% if conversation.product.title|length > 40 %}...{% endif %}</h6>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <!-- Last Message Preview -->
+                        <div class="last-message">
+                            {% if conversation.status == 'completed' %}
+                                <span class="text-success">✅ Deal selesai</span>
+                            {% elif conversation.status == 'negotiating' %}
+                                <span class="text-warning">🤝 Sedang bernegosiasi...</span>
+                            {% else %}
+                                <span>💬 Tap untuk melanjutkan percakapan</span>
+                            {% endif %}
+                        </div>
+                    </a>
+                    {% if conversation.unread_count > 0 %}
+                    <div class="unread-badge">{{ conversation.unread_count }}</div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state">
+                    <div class="mb-4">
+                        <i class="fas fa-comments fa-4x text-muted mb-3"></i>
+                        <h5>Belum ada percakapan</h5>
+                        <p class="text-muted">Mulai chat dengan toko untuk bertanya tentang produk</p>
+                    </div>
+                    <a href="{{ url_for('browse_products') }}" class="btn btn-primary rounded-pill px-4">
+                        <i class="fas fa-search me-2"></i>Jelajahi Produk
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+function filterConversations() {
+    const search = document.getElementById('searchConversations').value.toLowerCase();
+    const conversations = document.querySelectorAll('.conversation-card');
+
+    conversations.forEach(conversation => {
+        const storeName = conversation.querySelector('.store-name').textContent.toLowerCase();
+        const productText = conversation.querySelector('.product-preview') ? 
+                           conversation.querySelector('.product-preview').textContent.toLowerCase() : '';
+
+        if (storeName.includes(search) || productText.includes(search)) {
+            conversation.style.display = 'block';
+        } else {
+            conversation.style.display = 'none';
+        }
+    });
+}
+
+// Auto refresh unread count every 30 seconds
+setInterval(function() {
+    fetch('/get_unread_chat_count')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success && data.unread_count > 0) {
+                // Update unread badges or refresh page if needed
+                const title = document.title;
+                if (!title.includes('(')) {
+                    document.title = `(${data.unread_count}) ${title}`;
+                }
+            } else if (data.success && data.unread_count === 0) {
+                const title = document.title;
+                if (title.includes('(')) {
+                    document.title = title.substring(title.indexOf(')') + 2);
+                }
+            }
+        })
+        .catch(error => console.log('Error checking unread:', error));
+}, 30000);
+</script>
+{% endblock %}
