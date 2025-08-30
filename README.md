@@ -535,19 +535,6 @@ export FLASK_ENV=production
 export DATABASE_URL=postgresql://prod_user:pass@prod_host/barterhub
 export SESSION_SECRET=super-secret-production-key
 ```
-
-## 🏆 Penghargaan & Sertifikasi
-
-### 🥇 Awards
-- 🏆 **Best Startup 2024** - Indonesia Digital Innovation
-- 🌟 **Sustainability Champion** - Green Tech Awards  
-- 💡 **Most Innovative Platform** - E-commerce Excellence
-
-### 📜 Sertifikasi
-- ✅ **ISO 27001:2013** - Information Security Management
-- ✅ **PCI DSS Level 1** - Payment Card Industry Compliance  
-- ✅ **SOC 2 Type II** - Service Organization Controls
-
 ## 📞 Kontak & Support
 
 ### 🏢 Company Information
